@@ -528,7 +528,7 @@ class RandomErasing(object):
             aspect_range = min(aspect_range, 1 / aspect_range)
             aspect_range = (aspect_range, 1 / aspect_range)
         assert isinstance(aspect_range, Sequence) and len(aspect_range) == 2 \
-            and all(isinstance(x, float) for x in aspect_range), \
+               and all(isinstance(x, float) for x in aspect_range), \
             'aspect_range should be a float or Sequence with two float.'
         assert all(x > 0 for x in aspect_range), \
             'aspect_range should be positive.'
@@ -538,13 +538,13 @@ class RandomErasing(object):
         if isinstance(fill_color, Number):
             fill_color = [fill_color] * 3
         assert isinstance(fill_color, Sequence) and len(fill_color) == 3 \
-            and all(isinstance(x, Number) for x in fill_color), \
+               and all(isinstance(x, Number) for x in fill_color), \
             'fill_color should be a float or Sequence with three int.'
         if fill_std is not None:
             if isinstance(fill_std, Number):
                 fill_std = [fill_std] * 3
             assert isinstance(fill_std, Sequence) and len(fill_std) == 3 \
-                and all(isinstance(x, Number) for x in fill_std), \
+                   and all(isinstance(x, Number) for x in fill_std), \
                 'fill_std should be a float or Sequence with three int.'
 
         self.erase_prob = erase_prob
@@ -665,6 +665,43 @@ class Pad(object):
 
 
 @PIPELINES.register_module()
+class RandomResize(object):
+    """Reisze the image randomly with different interpolation.
+
+    Flip the image randomly based on flip probaility and flip direction.
+
+    Args:
+        flip_prob (float): probability of the image being flipped. Default: 0.5
+        direction (str): The flipping direction. Options are
+            'horizontal' and 'vertical'. Default: 'horizontal'.
+    """
+
+    def __init__(self,
+                 size,
+                 interpolation=["nearest", "bilinear", "bicubic", "area", "lanczos"],
+                 adaptive_side='short',
+                 backend='cv2'):
+        self.interpolation = ','.join(interpolation)
+        self.resizers = [Resize(size, x, adaptive_side, backend) for x in interpolation]
+
+    def __call__(self, results):
+        """Call function to flip image.
+
+        Args:
+            results (dict): Result dict from loading pipeline.
+
+        Returns:
+            dict: Flipped results, 'flip', 'flip_direction' keys are added into
+                result dict.
+        """
+        resizer = random.choice(self.resizers)
+        return resizer(results)
+
+    def __repr__(self):
+        return self.__class__.__name__ + f'(interpolation={self.interpolation})'
+
+
+@PIPELINES.register_module()
 class Resize(object):
     """Resize images.
 
@@ -737,9 +774,9 @@ class Resize(object):
                 if condition_ignore_resize[self.adaptive_side]:
                     ignore_resize = True
                 elif any([
-                        self.adaptive_side == 'short' and w < h,
-                        self.adaptive_side == 'long' and w > h,
-                        self.adaptive_side == 'width',
+                    self.adaptive_side == 'short' and w < h,
+                    self.adaptive_side == 'long' and w > h,
+                    self.adaptive_side == 'width',
                 ]):
                     width = target_size
                     height = int(target_size * h / w)
