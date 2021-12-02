@@ -324,9 +324,9 @@ class Runner:
                 for r, label in zip(res, self.labels):
                     if r > 0.5:
                         tags.append(label)
-                        tags.append(str(r))
+                        # tags.append(str(r))
                 r_list.append(','.join(tags))
-            results = ['{} {}\n'.format(filename, r) for filename, r in zip(filenames, r_list)]
+            results = ['{} {}\n'.format(filename.strip(), r) for filename, r in zip(filenames, r_list)]
             for result in results:
                 self.save_file.write(result)
         except Exception as e:
@@ -361,7 +361,7 @@ def parse_args():
     parser.add_argument('save_path')
     parser.add_argument('--num_preprocess_threads', default=8)
     parser.add_argument('--arch', default='resnet')
-    parser.add_argument('--max_batch_size', default=32, type=int)
+    parser.add_argument('--max_batch_size', default=64, type=int)
     parser.add_argument('--labels', default='0,1')
     args = parser.parse_args()
 
@@ -372,11 +372,13 @@ if __name__ == "__main__":
     args = parse_args()
     # config
     num_preprocess_threads = args.num_preprocess_threads
-
-
+    labels = [
+            '性感_胸部', '色情_女胸','色情_男下体', '色情_口交', '性感_内衣裤',
+            '性感_男性胸部', '色情_裸露下体', '性感_腿部特写'
+        ]
     image_queue = Queue(100)
     file_queue = Queue(100)
-    runner = Runner(args.arch, args.max_batch_size, args.engine_path, args.labels.split(','), image_queue,
+    runner = Runner(args.arch, args.max_batch_size, args.engine_path, labels, image_queue,
                     args.save_path)
 
     if os.path.isfile(args.source):
