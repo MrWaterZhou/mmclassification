@@ -21,4 +21,4 @@ trtexec \
         --saveEngine=$ENGINE_FILE \
         --minShapes=input:1x3x224x224 \
         --optShapes=input:8x3x224x224 \
-        --maxShapes=input:32x3x224x224
+        --maxShapes=input:64x3x224x224
