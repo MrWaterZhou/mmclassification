@@ -5,7 +5,7 @@ import numpy as np
 import torch
 
 
-def average_performance(pred, target, thr=None, k=None):
+def average_performance(pred, target, thr=None, k=None, labels=None):
     """Calculate CP, CR, CF1, OP, OR, OF1, where C stands for per-class
     average, O stands for overall average, P stands for precision, R stands for
     recall and F1 stands for F1-score.
@@ -20,6 +20,7 @@ def average_performance(pred, target, thr=None, k=None):
         thr (float): The confidence threshold. Defaults to None.
         k (int): Top-k performance. Note that if thr and k are both given, k
             will be ignored. Defaults to None.
+        labels: label names
 
     Returns:
         tuple: (CP, CR, CF1, OP, OR, OF1)
@@ -39,7 +40,7 @@ def average_performance(pred, target, thr=None, k=None):
                       'top-k.')
 
     assert pred.shape == \
-        target.shape, 'pred and target should be in the same shape.'
+           target.shape, 'pred and target should be in the same shape.'
 
     eps = np.finfo(np.float32).eps
     target[target == -1] = 0
@@ -69,4 +70,12 @@ def average_performance(pred, target, thr=None, k=None):
     OP = tp.sum() / np.maximum(tp.sum() + fp.sum(), eps) * 100.0
     OR = tp.sum() / np.maximum(tp.sum() + fn.sum(), eps) * 100.0
     OF1 = 2 * OP * OR / np.maximum(OP + OR, eps)
-    return CP, CR, CF1, OP, OR, OF1
+
+    if labels is None:
+        return CP, CR, CF1, OP, OR, OF1
+    else:
+        per_class_result = {}
+        for i, label in enumerate(labels):
+            per_class_result[label + '_precision'] = precision_class[i]
+            per_class_result[label + '_recall'] = recall_class[i]
+        return CP, CR, CF1, OP, OR, OF1, per_class_result
