@@ -169,7 +169,7 @@ def multilabel_categorical_crossentropy(pred,
     y_pred = (1 - 2 * label) * pred
     y_pred_neg = y_pred - label * 1e12
     y_pred_pos = y_pred - (1 - label) * 1e12
-    zeros = torch.zeros((N, 1), dtype=y_pred.dtype)
+    zeros = torch.zeros((N, 1), dtype=y_pred.dtype, device=y_pred_neg.device)
     y_pred_neg = torch.cat([y_pred_neg, zeros], dim=-1)
     y_pred_pos = torch.cat([y_pred_pos, zeros], dim=-1)
     neg_loss = torch.logsumexp(y_pred_neg, dim=-1)
