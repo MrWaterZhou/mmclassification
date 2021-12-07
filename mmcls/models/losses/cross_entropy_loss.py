@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch.nn as nn
 import torch.nn.functional as F
+import torch
 
 from ..builder import LOSSES
 from .utils import weight_reduce_loss
@@ -130,6 +131,63 @@ def binary_cross_entropy(pred,
     return loss
 
 
+def multilabel_categorical_crossentropy(pred,
+                                        label,
+                                        weight=None,
+                                        reduction='mean',
+                                        avg_factor=None,
+                                        class_weight=None,
+                                        pos_weight=None):
+    r"""苏剑林. (Apr. 25, 2020). 《将“softmax+交叉熵”推广到多标签分类问题 》[Blog post]. Retrieved from https://spaces.ac.cn/archives/7359.
+        log⎛⎝⎜⎜1+∑i∈Ωnegesi⎞⎠⎟⎟+log⎛⎝⎜⎜1+∑j∈Ωpose−sj⎞⎠⎟⎟
+    Args:
+        pred (torch.Tensor): The prediction with shape (N, \*).
+        label (torch.Tensor): The gt label with shape (N, \*).
+        weight (torch.Tensor, optional): Element-wise weight of loss with shape
+            (N, ). Defaults to None.
+        reduction (str): The method used to reduce the loss.
+            Options are "none", "mean" and "sum". If reduction is 'none' , loss
+            is same shape as pred and label. Defaults to 'mean'.
+        avg_factor (int, optional): Average factor that is used to average
+            the loss. Defaults to None.
+        class_weight (torch.Tensor, optional): The weight for each class with
+            shape (C), C is the number of classes. Default None.
+        pos_weight (torch.Tensor, optional): The positive weight for each
+            class with shape (C), C is the number of classes. Default None.
+
+    Returns:
+        torch.Tensor: The calculated loss
+    """
+    # Ensure that the size of class_weight is consistent with pred and label to
+    # avoid automatic boracast,
+    assert pred.dim() == label.dim()
+    N = pred.size()[0]
+
+    if class_weight is not None:
+        class_weight = class_weight.repeat(N, 1)
+
+    y_pred = (1 - 2 * label) * pred
+    y_pred_neg = y_pred - label * 1e12
+    y_pred_pos = y_pred - (1 - label) * 1e12
+    zeros = torch.zeros((N, 1), dtype=y_pred.dtype)
+    y_pred_neg = torch.cat([y_pred_neg, zeros], dim=-1)
+    y_pred_pos = torch.cat([y_pred_pos, zeros], dim=-1)
+    neg_loss = torch.logsumexp(y_pred_neg, dim=-1)
+    pos_loss = torch.logsumexp(y_pred_pos, dim=-1)
+
+    loss = neg_loss + pos_loss
+
+    # apply weights and do the reduction
+    if weight is not None:
+        assert weight.dim() == 1
+        weight = weight.float()
+        if pred.dim() > 1:
+            weight = weight.reshape(-1, 1)
+    loss = weight_reduce_loss(
+        loss, weight=weight, reduction=reduction, avg_factor=avg_factor)
+    return loss
+
+
 @LOSSES.register_module()
 class CrossEntropyLoss(nn.Module):
     """Cross entropy loss.
@@ -152,6 +210,7 @@ class CrossEntropyLoss(nn.Module):
     def __init__(self,
                  use_sigmoid=False,
                  use_soft=False,
+                 use_multi_label=False,
                  reduction='mean',
                  loss_weight=1.0,
                  class_weight=None,
@@ -159,8 +218,9 @@ class CrossEntropyLoss(nn.Module):
         super(CrossEntropyLoss, self).__init__()
         self.use_sigmoid = use_sigmoid
         self.use_soft = use_soft
+        self.use_multi_label = use_multi_label
         assert not (
-            self.use_soft and self.use_sigmoid
+                self.use_soft and self.use_sigmoid and self.use_multi_label
         ), 'use_sigmoid and use_soft could not be set simultaneously'
 
         self.reduction = reduction
@@ -172,6 +232,8 @@ class CrossEntropyLoss(nn.Module):
             self.cls_criterion = binary_cross_entropy
         elif self.use_soft:
             self.cls_criterion = soft_cross_entropy
+        elif self.use_multi_label:
+            self.cls_criterion = multilabel_categorical_crossentropy
         else:
             self.cls_criterion = cross_entropy
 
