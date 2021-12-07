@@ -142,6 +142,7 @@ data = dict(
 
 evaluation = dict(interval=5, metric=['mAP', 'CP', 'CR', 'CF1', 'OP', 'OR', 'OF1'],
                   labels=['性感_胸部', '色情_女胸', '色情_男下体', '色情_口交', '性感_内衣裤', '性感_男性胸部', '色情_裸露下体', '性感_腿部特写'])
+load_from = 'https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_small_224_b16x64_300e_imagenet_20210615_110219-7f9d988b.pth'
 
 paramwise_cfg = dict(
     norm_decay_mult=0.0,
@@ -169,7 +170,7 @@ lr_config = dict(
     min_lr_ratio=1e-2,
     warmup='linear',
     warmup_ratio=1e-3,
-    warmup_iters=20 * 1252,
+    warmup_iters=20 * 125,
     warmup_by_epoch=False)
 
 runner = dict(type='EpochBasedRunner', max_epochs=300)
