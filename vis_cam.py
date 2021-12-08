@@ -314,19 +314,47 @@ class Saver(Thread):
         self.save_path = save_path
         self.save_queue = save_queue
 
+    def do_mosaic(self, frame, x, y, w, h, neighbor=9):
+        """
+        马赛克的实现原理是把图像上某个像素点一定范围邻域内的所有点用邻域内左上像素点的颜色代替，这样可以模糊细节，但是可以保留大体的轮廓。
+        :param frame: opencv frame
+        :param int x :  马赛克左顶点
+        :param int y:  马赛克右顶点
+        :param int w:  马赛克宽
+        :param int h:  马赛克高
+        :param int neighbor:  马赛克每一块的宽
+        """
+        fh, fw = frame.shape[0], frame.shape[1]
+        if (y + h > fh) or (x + w > fw):
+            return
+        for i in range(0, h - neighbor, neighbor):  # 关键点0 减去neightbour 防止溢出
+            for j in range(0, w - neighbor, neighbor):
+                rect = [j + x, i + y, neighbor, neighbor]
+                color = frame[i + y][j + x].tolist()  # 关键点1 tolist
+                left_up = (rect[0], rect[1])
+                right_down = (rect[0] + neighbor - 1, rect[1] + neighbor - 1)  # 关键点2 减去一个像素
+                cv2.rectangle(frame, left_up, right_down, color, -1)
     def run(self) -> None:
         while True:
             filename, shape, grayscale_cam = self.save_queue.get()
             try:
                 image = cv2.imread(filename)
                 grayscale_cam = cv2.resize(grayscale_cam, (shape[1], shape[0]))
+                hotspot = np.where(grayscale_cam == np.max(grayscale_cam))
+                x = hotspot[0][0]
+                y = hotspot[1][0]
+                h = min(x, shape[0] - x) // 4
+                w = min(y, shape[1] - y) // 4
+                self.do_mosaic(image,x,y,w,h)
+
+
 
                 hotmap = show_cam_grad(grayscale_cam, image, None, None, None)
 
                 filename = filename.split('/')[-1]
                 filename = os.path.join(self.save_path, filename)
-                cv2.imwrite(filename, grayscale_cam * 255)
-                cv2.imwrite(filename+'hotmap.jpg', hotmap)
+                cv2.imwrite(filename, image)
+                cv2.imwrite(filename + 'hotmap.jpg', hotmap)
             except Exception as e:
                 print(e)
 
