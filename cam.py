@@ -35,6 +35,11 @@ def get_args():
         type=str,
         default='',
         help='ckpt')
+    parser.add_argument(
+        '--layer',
+        type=str,
+        default='',
+        help='layer')
     parser.add_argument('--use-cuda', action='store_true', default=False,
                         help='Use NVIDIA GPU acceleration')
     parser.add_argument(
@@ -48,7 +53,7 @@ def get_args():
         '--eigen_smooth',
         action='store_true',
         help='Reduce noise by taking the first principle componenet'
-        'of cam_weights*activations')
+             'of cam_weights*activations')
     parser.add_argument('--method', type=str, default='gradcam',
                         choices=['gradcam', 'gradcam++',
                                  'scorecam', 'xgradcam',
@@ -84,6 +89,7 @@ def get_layer(layer_str, model):
                 f"model don't have `{layer_str}`, please use valid layers")
     return cur_layer
 
+
 if __name__ == '__main__':
     """ python cam.py -image-path <path_to_image>
     Example usage of loading an image, and computing:
@@ -104,14 +110,11 @@ if __name__ == '__main__':
          "layercam": LayerCAM,
          "fullgrad": FullGrad}
 
-
     # load model
     cfg = mmcv.Config.fromfile(args.config)
     model = init_model(cfg, args.pt, device='cpu')
 
-
     print(model)
-
 
     # model = models.resnet50(pretrained=True)
 
@@ -127,7 +130,7 @@ if __name__ == '__main__':
     # You can also try selecting all layers of a certain type, with e.g:
     # from pytorch_grad_cam.utils.find_layers import find_layer_types_recursive
     # find_layer_types_recursive(model, [torch.nn.ReLU])
-    target_layers = get_layer('model.backbone.layer4.conv3',model)
+    target_layers = get_layer(args.layer, model)
 
     rgb_img = cv2.imread(args.image_path, 1)[:, :, ::-1]
     rgb_img = np.float32(rgb_img) / 255
@@ -145,7 +148,6 @@ if __name__ == '__main__':
     with cam_algorithm(model=model,
                        target_layers=target_layers,
                        use_cuda=args.use_cuda) as cam:
-
         # AblationCAM and ScoreCAM have batched implementations.
         # You can override the internal batch size for faster computation.
         cam.batch_size = 32
