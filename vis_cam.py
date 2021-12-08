@@ -340,15 +340,11 @@ class Saver(Thread):
             filename, shape, grayscale_cam = self.save_queue.get()
             try:
                 image = cv2.imread(filename)
+                mosaic = image.copy()
                 grayscale_cam = cv2.resize(grayscale_cam, (shape[1], shape[0]))
                 hotspot = np.where(grayscale_cam == np.max(grayscale_cam))
-                y = hotspot[0][0]
-                x = hotspot[1][0]
-                w = min(x, shape[0] - x) // 2
-                h = min(y, shape[1] - y) // 2
-                y = y - h//2
-                x = x - w//2
-                self.do_mosaic(image, x, y, w, h)
+                self.do_mosaic(mosaic, 0, 0, shape[1], shape[0])
+                image[grayscale_cam > 0.5] = mosaic[grayscale_cam > 0.5]
 
                 hotmap = show_cam_grad(grayscale_cam, image, None, None, None)
 
