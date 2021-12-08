@@ -241,10 +241,11 @@ class Loader(Thread):
         for file in self.file_list:
             try:
                 image = cv2.imread(file.strip())
+                shape = image.shape
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
                 image = cv2.resize(image, (224, 224))
                 image = np.expand_dims(image, 0)
-                self.image_queue.put((file, image))
+                self.image_queue.put((file, image, shape))
             except:
                 pass
         self.end = True
