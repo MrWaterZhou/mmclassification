@@ -92,7 +92,7 @@ if __name__ == '__main__':
     cfg.model.pretrained = None
     classifier = build_classifier(cfg.model)
 
-    if args.checkpoint:
+    if args.pt:
         load_checkpoint(classifier, args.pt, map_location='cpu')
 
     model = classifier
