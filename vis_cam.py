@@ -214,7 +214,6 @@ def get_layer(layer_str, model):
 
 def show_cam_grad(grayscale_cam, src_img, title, out_path=None, origin_image=None):
     """fuse src_img and grayscale_cam and show or save."""
-    grayscale_cam = grayscale_cam[0, :]
     if origin_image is None:
         src_img = np.float32(src_img) / 255
     else:
@@ -226,8 +225,7 @@ def show_cam_grad(grayscale_cam, src_img, title, out_path=None, origin_image=Non
 
     if out_path:
         mmcv.imwrite(visualization_img, str(out_path))
-    else:
-        mmcv.imshow(visualization_img, win_name=title)
+    return visualization_img
 
 
 class Loader(Thread):
@@ -320,13 +318,17 @@ class Saver(Thread):
         while True:
             filename, shape, grayscale_cam = self.save_queue.get()
             try:
+                image = cv2.imread(filename)
                 grayscale_cam = cv2.resize(grayscale_cam, (shape[1], shape[0]))
+
+                hotmap = show_cam_grad(grayscale_cam, image, None, None, None)
+
                 filename = filename.split('/')[-1]
-                filename = os.path.join(self.save_path,filename)
+                filename = os.path.join(self.save_path, filename)
                 cv2.imwrite(filename, grayscale_cam * 255)
+                cv2.imwrite(filename+'hotmap.jpg', hotmap)
             except Exception as e:
                 print(e)
-
 
 
 def main():
@@ -368,7 +370,7 @@ def main():
             eigen_smooth=args.eigen_smooth,
             aug_smooth=args.aug_smooth)
         show_cam_grad(
-            grayscale_cam, src_img, title=args.method, out_path=args.save_path, origin_image=image)
+            grayscale_cam[0], src_img, title=args.method, out_path=args.save_path, origin_image=image)
 
 
     elif args.source is not None:
@@ -376,12 +378,11 @@ def main():
         save_queue = Queue(100)
 
         num_preprocess_threads = 8
-        max_batch_size=32
+        max_batch_size = 32
         num_postprocess_threrads = 4
 
         runner = Runner(args, cam, max_batch_size, image_queue, save_queue, arch='regnetx',
-                 device=args.device)
-
+                        device=args.device)
 
         import glob
         if os.path.isfile(args.source):
@@ -398,7 +399,7 @@ def main():
             ts.append(loader)
 
         for i in range(num_postprocess_threrads):
-            saver = Saver(args.save_path,save_queue)
+            saver = Saver(args.save_path, save_queue)
             saver.daemon = True
             saver.start()
 
@@ -412,12 +413,6 @@ def main():
             time.sleep(10)
 
         sys.exit()
-
-
-
-
-
-
 
 
 if __name__ == '__main__':
