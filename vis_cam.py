@@ -210,11 +210,10 @@ def get_layer(layer_str, model):
 def show_cam_grad(grayscale_cam, src_img, title, out_path=None, origin_image=None):
     """fuse src_img and grayscale_cam and show or save."""
     grayscale_cam = grayscale_cam[0, :]
-    print(grayscale_cam)
     if origin_image is None:
         src_img = np.float32(src_img) / 255
     else:
-        src_img = np.float32(origin_image)
+        src_img = np.float32(origin_image) / 255
         shape = origin_image.shape
         grayscale_cam = cv2.resize(grayscale_cam, (shape[1], shape[0]))
     visualization_img = show_cam_on_image(
