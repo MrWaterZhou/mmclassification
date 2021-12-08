@@ -4,6 +4,7 @@ import copy
 import math
 import sys
 from pathlib import Path
+import cv2
 
 import mmcv
 import numpy as np
@@ -62,19 +63,19 @@ def parse_args():
         '--method',
         default='GradCAM',
         help='Type of method to use, supports '
-        f'{", ".join(list(METHOD_MAP.keys()))}.')
+             f'{", ".join(list(METHOD_MAP.keys()))}.')
     parser.add_argument(
         '--target-category',
         default=None,
         type=int,
         help='The target category to get CAM, default to use result '
-        'get from given model')
+             'get from given model')
     parser.add_argument(
         '--eigen-smooth',
         default=False,
         action='store_true',
         help='Reduce noise by taking the first principle componenet of '
-        '``cam_weights*activations``')
+             '``cam_weights*activations``')
     parser.add_argument(
         '--aug-smooth',
         default=False,
@@ -90,11 +91,11 @@ def parse_args():
         nargs='+',
         action=DictAction,
         help='override some settings in the used config, the key-value pair '
-        'in xxx=yyy format will be merged into config file. If the value to '
-        'be overwritten is a list, it should be like key="[a,b]" or key=a,b '
-        'It also allows nested list/tuple values, e.g. key="[(a,b),(c,d)]" '
-        'Note that the quotation marks are necessary and that no white space '
-        'is allowed.')
+             'in xxx=yyy format will be merged into config file. If the value to '
+             'be overwritten is a list, it should be like key="[a,b]" or key=a,b '
+             'It also allows nested list/tuple values, e.g. key="[(a,b),(c,d)]" '
+             'Note that the quotation marks are necessary and that no white space '
+             'is allowed.')
     args = parser.parse_args()
     if args.method.lower() not in METHOD_MAP.keys():
         raise ValueError(f'invalid CAM type {args.method},'
@@ -206,10 +207,15 @@ def get_layer(layer_str, model):
     return cur_layer
 
 
-def show_cam_grad(grayscale_cam, src_img, title, out_path=None):
+def show_cam_grad(grayscale_cam, src_img, title, out_path=None, origin_image=None):
     """fuse src_img and grayscale_cam and show or save."""
     grayscale_cam = grayscale_cam[0, :]
-    src_img = np.float32(src_img) / 255
+    if origin_image is None:
+        src_img = np.float32(src_img) / 255
+    else:
+        src_img = np.float32(origin_image)
+        shape = origin_image.shape
+        grayscale_cam = cv2.resize(grayscale_cam, (shape[1], shape[0]))
     visualization_img = show_cam_on_image(
         src_img, grayscale_cam, use_rgb=False)
 
@@ -244,13 +250,11 @@ def main():
     cam = init_cam(args.method, model, target_layers, use_cuda,
                    reshape_transform)
 
-
-
     # apply transform and perpare data
+    image = cv2.imread(args.img)
+    shape = image.shape
     data, src_img = apply_transforms(args.img, cfg.data.test.pipeline)
     data['img'] = data['img'].unsqueeze(0)
-
-
 
     # calculate cam grads and show|save the visualization image
     grayscale_cam = cam(
@@ -259,7 +263,7 @@ def main():
         eigen_smooth=args.eigen_smooth,
         aug_smooth=args.aug_smooth)
     show_cam_grad(
-        grayscale_cam, src_img, title=args.method, out_path=args.save_path)
+        grayscale_cam, src_img, title=args.method, out_path=args.save_path, origin_image=image)
 
 
 if __name__ == '__main__':
