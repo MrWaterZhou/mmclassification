@@ -135,7 +135,7 @@ data = dict(
         type=dataset_type,
         data_prefix='',
         classes=['性感_胸部', '色情_女胸', '色情_男下体', '色情_口交', '性感_内衣裤', '性感_男性胸部', '色情_裸露下体', '性感_腿部特写'],
-        ann_file='/home/zhou/projects/mmclassification/data/porn/porn_with_patch/train_p1.txt',
+        ann_file='/home/zhou/projects/mmclassification/data/porn/porn_with_patch/train.txt',
         pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
@@ -157,4 +157,4 @@ optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=None)
 # learning policy
 lr_config = dict(policy='step', step=[30, 60, 90])
-runner = dict(type='EpochBasedRunner', max_epochs=100)
+runner = dict(type='EpochBasedRunner', max_epochs=200)

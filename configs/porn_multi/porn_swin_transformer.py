@@ -14,17 +14,16 @@ dataset_type = 'PornJson'
 model = dict(
     type='ImageClassifier',
     backbone=dict(
-        type='SwinTransformer', arch='small', img_size=224,
+        type='SwinTransformer', arch='tiny', img_size=224,
         drop_path_rate=0.3),
     neck=dict(type='GlobalAveragePooling'),
     head=dict(
         type='MultiLabelLinearClsHead',
         num_classes=1000,
         in_channels=768,
-        init_cfg=None,  # suppress the default init_cfg of LinearClsHead.
         loss=dict(
             type='CrossEntropyLoss', loss_weight=1.0, use_sigmoid=True),
-        cal_acc=False),
+        ),
     init_cfg=[
         dict(type='TruncNormal', layer='Linear', std=0.02, bias=0.),
         dict(type='Constant', layer='LayerNorm', val=1., bias=0.)
@@ -123,7 +122,7 @@ test_pipeline = [
 ]
 
 data = dict(
-    samples_per_gpu=128,
+    samples_per_gpu=64,
     workers_per_gpu=12,
     train=dict(
         type=dataset_type,
@@ -146,7 +145,6 @@ data = dict(
 
 evaluation = dict(interval=5, metric=['mAP', 'CP', 'CR', 'CF1', 'OP', 'OR', 'OF1'],
                   labels=['性感_胸部', '色情_女胸', '色情_男下体', '色情_口交', '性感_内衣裤', '性感_男性胸部', '色情_裸露下体', '性感_腿部特写'])
-load_from = 'https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_small_224_b16x64_300e_imagenet_20210615_110219-7f9d988b.pth'
 
 paramwise_cfg = dict(
     norm_decay_mult=0.0,

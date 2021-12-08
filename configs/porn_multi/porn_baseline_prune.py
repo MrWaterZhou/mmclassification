@@ -3,17 +3,17 @@ _base_ = [
 ]
 fp16 = dict(loss_scale='dynamic')
 # dataset settings
-dataset_type = 'PornJson'
+dataset_type = 'Porn'
 
 # model settings
 model = dict(
     type='ImageClassifier',
-    backbone=dict(type='RegNet', arch='regnetx_4.0gf'),
+    backbone=dict(type='RegNet', arch='regnetx_800mf'),
     neck=dict(type='GlobalAveragePooling'),
     head=dict(
         type='MultiLabelLinearClsHead',
-        num_classes=8,
-        in_channels=1360,
+        num_classes=11,
+        in_channels=672,
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0, use_sigmoid=True),
     ),
     # train_cfg=dict(augments=[
@@ -30,6 +30,7 @@ img_norm_cfg = dict(
 policies = [
     dict(type='AutoContrast'),
     dict(type='Equalize'),
+    dict(type='Invert'),
     dict(
         type='Rotate',
         interpolation='bicubic',
@@ -82,30 +83,10 @@ policies = [
         direction='vertical')
 ]
 
-transforms = [
-    dict(
-        type='OneOf',
-        transforms=[
-            dict(type='Blur', blur_limit=3, p=1.0),
-            dict(type='MotionBlur', blur_limit=3, p=1.0),
-        ],
-        p=0.2),
-    dict(
-        type='RandomRotate90',
-        p=0.3
-    ),
-    dict(
-        type='ImageCompression',
-        quality_lower=30,
-        quality_upper=70,
-        p=0.7,
-    )
-]
-
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='Albu', transforms=transforms),
-    dict(type='RandomResize', size=(224, 224)),
+    dict(type='Resize', size=(224, 224)),
+    dict(type='RandomJpegCompression'),
     dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
     dict(
         type='RandAugment',
@@ -134,26 +115,29 @@ data = dict(
     train=dict(
         type=dataset_type,
         data_prefix='',
-        classes=['性感_胸部', '色情_女胸', '色情_男下体', '色情_口交', '性感_内衣裤', '性感_男性胸部', '色情_裸露下体', '性感_腿部特写'],
-        ann_file='/home/zhou/projects/mmclassification/data/porn/porn_with_patch/train_p1.txt',
+        classes=['性感_胸部', '色情_性行为', '色情_女胸', '性感_臀部', '色情_臀部', '性感_腿部特写',
+           '色情_女下体', '色情_男下体', '色情_口交', '性感_内衣裤', '性感_男性胸部'],
+        ann_file='/home/zhou/add_disk1/mmcls/data/porn/train_modify.prune.txt',
         pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
-        data_prefix='',
-        classes=['性感_胸部', '色情_女胸', '色情_男下体', '色情_口交', '性感_内衣裤', '性感_男性胸部', '色情_裸露下体', '性感_腿部特写'],
-        ann_file='/home/zhou/projects/mmclassification/data/porn/porn_with_patch/eval.txt',
+        data_prefix='data/porn/eval',
+        classes=['性感_胸部', '色情_性行为', '色情_女胸', '性感_臀部', '色情_臀部', '性感_腿部特写',
+           '色情_女下体', '色情_男下体', '色情_口交', '性感_内衣裤', '性感_男性胸部'],
+        ann_file='/home/zhou/add_disk1/mmcls/eval_modify.txt',
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
         data_prefix='',
-        classes=['性感_胸部', '色情_女胸', '色情_男下体', '色情_口交', '性感_内衣裤', '性感_男性胸部', '色情_裸露下体', '性感_腿部特写'],
-        ann_file='/home/zhou/projects/mmclassification/data/porn/porn_with_patch/eval.txt',
+        classes=['性感_胸部', '色情_性行为', '色情_女胸', '性感_臀部', '色情_臀部', '性感_腿部特写',
+           '色情_女下体', '色情_男下体', '色情_口交', '性感_内衣裤', '性感_男性胸部'],
+        ann_file='/home/zhou/add_disk1/mmcls/eval_modify.txt',
         pipeline=test_pipeline))
-load_from = 'https://download.openmmlab.com/mmclassification/v0/regnet/convert/RegNetX-4.0GF-ef8bb32c.pth'
+load_from = 'https://download.openmmlab.com/mmclassification/v0/regnet/convert/RegNetX-800MF-4f9d1e8a.pth'
 evaluation = dict(interval=5, metric=['mAP', 'CP', 'CR', 'CF1', 'OP', 'OR', 'OF1'])
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=None)
 # learning policy
 lr_config = dict(policy='step', step=[30, 60, 90])

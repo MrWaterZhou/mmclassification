@@ -129,7 +129,7 @@ test_pipeline = [
 ]
 
 data = dict(
-    samples_per_gpu=128,
+    samples_per_gpu=256,
     workers_per_gpu=12,
     train=dict(
         type=dataset_type,
@@ -153,7 +153,7 @@ load_from = 'https://download.openmmlab.com/mmclassification/v0/regnet/convert/R
 evaluation = dict(interval=5, metric=['mAP', 'CP', 'CR', 'CF1', 'OP', 'OR', 'OF1'])
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=None)
 # learning policy
 lr_config = dict(policy='step', step=[30, 60, 90])
