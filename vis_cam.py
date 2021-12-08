@@ -345,7 +345,7 @@ class Saver(Thread):
                 y = hotspot[1][0]
                 h = min(x, shape[0] - x) // 4
                 w = min(y, shape[1] - y) // 4
-                self.do_mosaic(image,x,y,w,h)
+                self.do_mosaic(image,y,x,h,w)
 
 
 
