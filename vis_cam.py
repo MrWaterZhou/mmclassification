@@ -5,10 +5,14 @@ import math
 import sys
 from pathlib import Path
 import cv2
-
+import os
+import torch
 import mmcv
 import numpy as np
 from mmcv import Config, DictAction
+from threading import Thread
+from queue import Queue
+from typing import Tuple, List
 
 from mmcls.apis import init_model
 from mmcls.datasets.pipelines import Compose
@@ -45,12 +49,13 @@ Swin_based_Transformers = tuple([SwinTransformer])
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Visualize CAM')
-    parser.add_argument('img', help='Image file')
     parser.add_argument('config', help='Config file')
     parser.add_argument('checkpoint', help='Checkpoint file')
+    parser.add_argument('--img', help='Image file')
+    parser.add_argument('--source', help='Image file')
     parser.add_argument(
         '--target-layers',
-        default=[],
+        default=['model.backbone.layer4.0'],
         nargs='+',
         type=str,
         help='The target layers to get CAM')
@@ -225,6 +230,104 @@ def show_cam_grad(grayscale_cam, src_img, title, out_path=None, origin_image=Non
         mmcv.imshow(visualization_img, win_name=title)
 
 
+class Loader(Thread):
+    def __init__(self, file_list: List, image_queue: Queue):
+        super().__init__()
+        self.file_list = file_list
+        self.image_queue = image_queue
+        self.end = False
+
+    def run(self) -> None:
+        for file in self.file_list:
+            try:
+                image = cv2.imread(file.strip())
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+                image = cv2.resize(image, (224, 224))
+                image = np.expand_dims(image, 0)
+                self.image_queue.put((file, image))
+            except:
+                pass
+        self.end = True
+
+
+class Runner:
+    def __init__(self, args, cam_model, max_batch_size, image_queue: Queue, save_queue: Queue, arch='regnetx',
+                 device='cpu'):
+        assert arch in {'regnetx', 'resnet'}
+        self.mean = 0
+        self.std = 1
+        self.BGR = False
+        if arch == 'regnetx':
+            self.BGR = True
+        self.mean = np.array([123.675, 116.28, 103.53])
+        self.std = np.array([58.395, 57.12, 57.375])
+        self.model = cam_model
+        self.image_queue = image_queue
+        self.max_batch_size = max_batch_size
+        self.device = device
+        self.args = args
+        self.save_queue = save_queue
+
+    def preprocess(self, images):
+        images = np.concatenate(images, 0)
+        if self.BGR:
+            images = images[:, :, :, ::-1]
+        images = (images - self.mean) / self.std
+        images = np.transpose(images, (0, 3, 1, 2))
+        images = np.ascontiguousarray(images, dtype=np.float32)
+
+        return torch.tensor(images, device=self.device)
+
+    def run(self):
+        try:
+            filenames = []
+            shapes = []
+            images = []
+            filename, image, shape = self.image_queue.get()
+            filenames.append(filename)
+            images.append(image)
+            shapes.append(shape)
+            while (len(filenames) < self.max_batch_size - 1) and self.image_queue.qsize() != 0:
+                filename, image, shape = self.image_queue.get()
+                filenames.append(filename)
+                images.append(image)
+                shapes.append(shape)
+
+            images = self.preprocess(images)
+
+            grayscale_cams = self.model(
+                input_tensor=images,
+                target_category=self.args.target_category,
+                eigen_smooth=self.args.eigen_smooth,
+                aug_smooth=self.args.aug_smooth)
+
+            for filename, shape, grayscale_cam in zip(filenames, shapes, grayscale_cams):
+                self.save_queue.put((filename, shape, grayscale_cam))
+
+        except Exception as e:
+            print(e.__str__())
+        return 'done'
+
+
+class Saver(Thread):
+    def __init__(self, save_path: str, save_queue: Queue):
+        super().__init__()
+        self.save_path = save_path
+        self.save_queue = save_queue
+
+    def run(self) -> None:
+        while True:
+            filename, shape, grayscale_cam = self.save_queue.get()
+            try:
+                grayscale_cam = cv2.resize(grayscale_cam, (shape[1], shape[0]))
+                filename = filename.split('/')[-1]
+                filename = os.path.join(self.save_path,filename)
+                cv2.imwrite(filename, grayscale_cam * 255)
+            except Exception as e:
+                print(e)
+
+
+
 def main():
     args = parse_args()
     cfg = Config.fromfile(args.config)
@@ -250,20 +353,70 @@ def main():
     cam = init_cam(args.method, model, target_layers, use_cuda,
                    reshape_transform)
 
-    # apply transform and perpare data
-    image = cv2.imread(args.img)
-    shape = image.shape
-    data, src_img = apply_transforms(args.img, cfg.data.test.pipeline)
-    data['img'] = data['img'].unsqueeze(0)
+    if args.img is not None:
+        # apply transform and perpare data
+        image = cv2.imread(args.img)
+        shape = image.shape
+        data, src_img = apply_transforms(args.img, cfg.data.test.pipeline)
+        data['img'] = data['img'].unsqueeze(0)
 
-    # calculate cam grads and show|save the visualization image
-    grayscale_cam = cam(
-        input_tensor=data['img'],
-        target_category=args.target_category,
-        eigen_smooth=args.eigen_smooth,
-        aug_smooth=args.aug_smooth)
-    show_cam_grad(
-        grayscale_cam, src_img, title=args.method, out_path=args.save_path, origin_image=image)
+        # calculate cam grads and show|save the visualization image
+        grayscale_cam = cam(
+            input_tensor=data['img'],
+            target_category=args.target_category,
+            eigen_smooth=args.eigen_smooth,
+            aug_smooth=args.aug_smooth)
+        show_cam_grad(
+            grayscale_cam, src_img, title=args.method, out_path=args.save_path, origin_image=image)
+
+
+    elif args.source is not None:
+        image_queue = Queue(100)
+        save_queue = Queue(100)
+
+        num_preprocess_threads = 8
+        max_batch_size=32
+        num_postprocess_threrads = 4
+
+        runner = Runner(args, cam, max_batch_size, image_queue, save_queue, arch='regnetx',
+                 device=args.device)
+
+
+        import glob
+        if os.path.isfile(args.source):
+            files = open(args.source).readlines()
+        else:
+            files = glob.glob(args.source)
+
+        chunk_size = len(files) // num_preprocess_threads
+        ts = []
+        for i in range(num_preprocess_threads):
+            loader = Loader(files[i * chunk_size: (i + 1) * chunk_size], image_queue)
+            loader.daemon = True
+            loader.start()
+            ts.append(loader)
+
+        for i in range(num_postprocess_threrads):
+            saver = Saver(args.save_path,save_queue)
+            saver.daemon = True
+            saver.start()
+
+        status = sum([int(t.end) for t in ts]) < len(ts)
+        while (image_queue.qsize() > 0) or status:
+            runner.run()
+            status = sum([int(t.end) for t in ts]) < len(ts)
+
+        import time
+        while save_queue.qsize() > 0:
+            time.sleep(10)
+
+        sys.exit()
+
+
+
+
+
+
 
 
 if __name__ == '__main__':
