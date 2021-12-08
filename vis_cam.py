@@ -346,8 +346,8 @@ class Saver(Thread):
                 x = hotspot[1][0]
                 w = min(x, shape[0] - x) // 2
                 h = min(y, shape[1] - y) // 2
-                y = y - h
-                x = x - w
+                y = y - h//2
+                x = x - w//2
                 self.do_mosaic(image, x, y, w, h)
 
                 hotmap = show_cam_grad(grayscale_cam, image, None, None, None)
