@@ -334,6 +334,7 @@ class Saver(Thread):
                 left_up = (rect[0], rect[1])
                 right_down = (rect[0] + neighbor - 1, rect[1] + neighbor - 1)  # 关键点2 减去一个像素
                 cv2.rectangle(frame, left_up, right_down, color, -1)
+
     def run(self) -> None:
         while True:
             filename, shape, grayscale_cam = self.save_queue.get()
@@ -341,13 +342,13 @@ class Saver(Thread):
                 image = cv2.imread(filename)
                 grayscale_cam = cv2.resize(grayscale_cam, (shape[1], shape[0]))
                 hotspot = np.where(grayscale_cam == np.max(grayscale_cam))
-                x = hotspot[0][0]
-                y = hotspot[1][0]
-                h = min(x, shape[0] - x) // 4
-                w = min(y, shape[1] - y) // 4
-                self.do_mosaic(image,y,x,h,w)
-
-
+                y = hotspot[0][0]
+                x = hotspot[1][0]
+                w = min(x, shape[0] - x) // 2
+                h = min(y, shape[1] - y) // 2
+                y = y - h
+                x = x - w
+                self.do_mosaic(image, x, y, w, h)
 
                 hotmap = show_cam_grad(grayscale_cam, image, None, None, None)
 
