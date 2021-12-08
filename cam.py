@@ -107,7 +107,7 @@ if __name__ == '__main__':
 
     # load model
     cfg = mmcv.Config.fromfile(args.config)
-    model = init_model(cfg, args.checkpoint, device='cpu')
+    model = init_model(cfg, args.pt, device='cpu')
 
 
     print(model)
