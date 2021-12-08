@@ -2,7 +2,11 @@ import argparse
 import cv2
 import numpy as np
 import torch
+from mmcv.runner import load_checkpoint
+from mmcls.models import build_classifier
+import mmcv
 from torchvision import models
+
 from pytorch_grad_cam import GradCAM, \
     ScoreCAM, \
     GradCAMPlusPlus, \
@@ -20,6 +24,16 @@ from pytorch_grad_cam.utils.image import show_cam_on_image, \
 
 def get_args():
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--config',
+        type=str,
+        default='',
+        help='config file')
+    parser.add_argument(
+        '--pt',
+        type=str,
+        default='',
+        help='ckpt')
     parser.add_argument('--use-cuda', action='store_true', default=False,
                         help='Use NVIDIA GPU acceleration')
     parser.add_argument(
@@ -72,7 +86,20 @@ if __name__ == '__main__':
          "layercam": LayerCAM,
          "fullgrad": FullGrad}
 
-    model = models.resnet50(pretrained=True)
+
+    # load model
+    cfg = mmcv.Config.fromfile(args.config)
+    cfg.model.pretrained = None
+    classifier = build_classifier(cfg.model)
+
+    if args.checkpoint:
+        load_checkpoint(classifier, args.pt, map_location='cpu')
+
+    model = classifier
+    print(model)
+
+
+    # model = models.resnet50(pretrained=True)
 
     # Choose the target layer you want to compute the visualization for.
     # Usually this will be the last convolutional layer in the model.
