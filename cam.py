@@ -5,6 +5,7 @@ import torch
 from mmcv.runner import load_checkpoint
 from mmcls.models import build_classifier
 import mmcv
+from mmcls.apis import init_model
 from torchvision import models
 
 from pytorch_grad_cam import GradCAM, \
@@ -66,6 +67,23 @@ def get_args():
     return args
 
 
+def get_layer(layer_str, model):
+    """get model lyaer from given str."""
+    cur_layer = model
+    assert layer_str.startswith(
+        'model'), "target-layer must start with 'model'"
+    layer_items = layer_str.strip().split('.')
+    assert not (layer_items[-1].startswith('relu')
+                or layer_items[-1].startswith('bn')
+                ), "target-layer can't be 'bn' or 'relu'"
+    for item_str in layer_items[1:]:
+        if hasattr(cur_layer, item_str):
+            cur_layer = getattr(cur_layer, item_str)
+        else:
+            raise ValueError(
+                f"model don't have `{layer_str}`, please use valid layers")
+    return cur_layer
+
 if __name__ == '__main__':
     """ python cam.py -image-path <path_to_image>
     Example usage of loading an image, and computing:
@@ -89,13 +107,9 @@ if __name__ == '__main__':
 
     # load model
     cfg = mmcv.Config.fromfile(args.config)
-    cfg.model.pretrained = None
-    classifier = build_classifier(cfg.model)
+    model = init_model(cfg, args.checkpoint, device='cpu')
 
-    if args.pt:
-        load_checkpoint(classifier, args.pt, map_location='cpu')
 
-    model = classifier
     print(model)
 
 
@@ -113,7 +127,7 @@ if __name__ == '__main__':
     # You can also try selecting all layers of a certain type, with e.g:
     # from pytorch_grad_cam.utils.find_layers import find_layer_types_recursive
     # find_layer_types_recursive(model, [torch.nn.ReLU])
-    target_layers = [model.layer4[-1]]
+    target_layers = get_layer('model.backbone.layer4.2')
 
     rgb_img = cv2.imread(args.image_path, 1)[:, :, ::-1]
     rgb_img = np.float32(rgb_img) / 255
