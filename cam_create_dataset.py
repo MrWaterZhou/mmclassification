@@ -242,15 +242,16 @@ class Loader(Thread):
         for file in self.file_list:
             image_path = file['image']
             label_choices = [i for i, label in enumerate(self.labels) if file[label] == 1]
-            label = np.random.choice(label_choices)
-            try:
-                image_raw = cv2.imread(image_path)
-                image = cv2.cvtColor(image_raw, cv2.COLOR_BGR2RGB)
-                image = cv2.resize(image, (224, 224))
-                image = np.expand_dims(image, 0)
-                self.image_queue.put((file, image, image_raw, label))
-            except:
-                pass
+            if len(label_choices)>0:
+                label = np.random.choice(label_choices)
+                try:
+                    image_raw = cv2.imread(image_path)
+                    image = cv2.cvtColor(image_raw, cv2.COLOR_BGR2RGB)
+                    image = cv2.resize(image, (224, 224))
+                    image = np.expand_dims(image, 0)
+                    self.image_queue.put((file, image, image_raw, label))
+                except:
+                    pass
         self.end = True
 
 
