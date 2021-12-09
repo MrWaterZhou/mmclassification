@@ -6,7 +6,7 @@ from .auto_augment import (AutoAugment, AutoContrast, Brightness,
 from .compose import Compose
 from .formatting import (Collect, ImageToTensor, ToNumpy, ToPIL, ToTensor,
                          Transpose, to_tensor)
-from .loading import LoadImageFromFile
+from .loading import LoadImageFromFile, LoadImageFromFileWithLocalAugment
 from .transforms import (CenterCrop, ColorJitter, Lighting, Normalize, Pad,
                          RandomCrop, RandomErasing, RandomFlip,
                          RandomGrayscale, RandomResizedCrop, Resize, RandomResize)
@@ -18,5 +18,5 @@ __all__ = [
     'RandomGrayscale', 'Shear', 'Translate', 'Rotate', 'Invert',
     'ColorTransform', 'Solarize', 'Posterize', 'AutoContrast', 'Equalize',
     'Contrast', 'Brightness', 'Sharpness', 'AutoAugment', 'SolarizeAdd',
-    'Cutout', 'RandAugment', 'Lighting', 'ColorJitter', 'RandomErasing', 'Pad', 'RandomResize'
+    'Cutout', 'RandAugment', 'Lighting', 'ColorJitter', 'RandomErasing', 'Pad', 'RandomResize', 'LoadImageFromFileWithLocalAugment'
 ]
