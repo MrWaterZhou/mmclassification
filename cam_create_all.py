@@ -352,7 +352,7 @@ class Saver(Thread):
         y = 0
         w = shape[1]
         h = shape[1]
-        neighbor = min(shape[1], shape[0])
+        neighbor = min(shape[1], shape[0]) // 40
         fh, fw = frame.shape[0], frame.shape[1]
         if (y + h > fh) or (x + w > fw):
             return
