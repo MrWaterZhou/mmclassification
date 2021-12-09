@@ -7,6 +7,7 @@ from .multi_label import MultiLabelDataset
 from .builder import DATASETS
 from mmcls.core import average_performance, mAP
 import warnings
+import glob
 
 
 def has_file_allowed_extension(filename, extensions):
@@ -101,7 +102,7 @@ class PornJson(MultiLabelDataset):
         data_infos = []
         for sample in self.samples:
             info = {'img_prefix': self.data_prefix}
-            info['img_info'] = {'filename': sample['image']}
+            info['img_info'] = {'filename': sample['image'], 'choices': glob.glob(sample['image']+'_*')}
             gt_label = [sample[x] for x in self.CLASSES]
             if len(gt_label) == 1:
                 gt_label = gt_label[0]
