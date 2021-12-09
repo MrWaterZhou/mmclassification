@@ -328,9 +328,8 @@ class Saver(Thread):
     def paste_color_block(self, image, grayscale_cam, shape):
         image = image.copy()
 
-        cam_bin = grayscale_cam * 255
-        ret, cam_bin = cv2.threshold(cam_bin, 127, 255, cv2.THRESH_BINARY)
-        cam_bin, contours, _ = cv2.findContours(cam_bin, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+        cam_bin = (grayscale_cam > 0.5).astype(np.uint8)
+        contours, _ = cv2.findContours((cam_bin * 255).astype(np.uint8), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
         center, r = cv2.minEnclosingCircle(contours[0])
         center = np.int0(center)
         cv2.circle(image, tuple(center), int(r * 0.6), np.random.randint(0, 255, 3).tolist(), -1)
