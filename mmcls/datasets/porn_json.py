@@ -79,6 +79,7 @@ class PornJson(MultiLabelDataset):
     CLASSES = ['normal', 'porn', 'sexy']
 
     def load_annotations(self):
+        local_aug = {}
         if self.ann_file is None:
             folder_to_idx = find_folders(self.data_prefix)
             samples = get_samples(
@@ -95,6 +96,16 @@ class PornJson(MultiLabelDataset):
         elif isinstance(self.ann_file, str):
             with open(self.ann_file) as f:
                 samples = [json.loads(x.strip()) for x in f.readlines()]
+            if os.path.exists(self.ann_file + '.add'):
+                with open(self.ann_file + '.add') as f:
+                    add = [json.loads(x.strip()) for x in f.readlines()]
+                for x in add:
+                    for key in x:
+                        if key not in local_aug:
+                            local_aug[key] = []
+                        local_aug[key].extend(x[key])
+
+
         else:
             raise TypeError('ann_file must be a str or None')
         self.samples = samples
@@ -102,7 +113,8 @@ class PornJson(MultiLabelDataset):
         data_infos = []
         for sample in self.samples:
             info = {'img_prefix': self.data_prefix}
-            info['img_info'] = {'filename': sample['image'], 'choices': glob.glob(sample['image']+'_*')}
+            info['img_info'] = {'filename': sample['image'],
+                                'choices': local_aug[sample['image']] if sample['image'] in local_aug else []}
             gt_label = [sample[x] for x in self.CLASSES]
             if len(gt_label) == 1:
                 gt_label = gt_label[0]
