@@ -332,7 +332,7 @@ class Saver(Thread):
         y = center[1][0]
         r = max(min(x, y, shape[0] - x, shape[1] - y) // 4, min(shape[0], shape[1]) // 10)
 
-        cv2.circle(image, (y, x), r, image.mean(axis=0).mean(axis=0).tolist(), -1)
+        cv2.circle(image, (x, y), r, image.mean(axis=0).mean(axis=0).tolist(), -1)
         return image
 
     def do_mosaic(self, image, grayscale_cam, shape):
