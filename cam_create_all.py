@@ -242,7 +242,7 @@ class Loader(Thread):
         for file in self.file_list:
             image_path = file['image']
             label_choices = [i for i, label in enumerate(self.labels) if file[label] == 1]
-            if len(label_choices)>0:
+            if len(label_choices) > 0:
                 for l in label_choices:
                     try:
                         image_raw = cv2.imread(image_path)
@@ -359,17 +359,15 @@ class Saver(Thread):
 
                 # 创建文件夹
                 filename = data['image']
-                father_path = os.path.dirname(filename)
-                new_father_path = father_path + '_{}'.format(label)
-                base_name = os.path.basename(filename)
-                os.makedirs(new_father_path, exist_ok=True)
-                save_path = os.path.join(new_father_path, base_name)
+
+                save_path = '{}_mask_{}.jpg'.format(filename, label)
 
                 cv2.imwrite(save_path, grayscale_cam * 255)
 
 
             except Exception as e:
                 print(e)
+
 
 def main():
     args = parse_args()
@@ -448,8 +446,6 @@ def main():
         while (image_queue.qsize() > 0) or status:
             runner.run()
             status = sum([int(t.end) for t in ts]) < len(ts)
-
-
 
         import time
         while save_queue.qsize() > 0:
