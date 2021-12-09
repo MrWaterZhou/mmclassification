@@ -462,14 +462,16 @@ def main():
             saver.daemon = True
             saver.start()
 
+        logger = Logger(result_queue, args.save_path)
+        logger.daemon = True
+        logger.start()
+
         status = sum([int(t.end) for t in ts]) < len(ts)
         while (image_queue.qsize() > 0) or status:
             runner.run()
             status = sum([int(t.end) for t in ts]) < len(ts)
 
-        logger = Logger(result_queue, args.save_path)
-        logger.daemon = True
-        logger.start()
+
 
         import time
         while save_queue.qsize() + result_queue.qsize() > 0:
