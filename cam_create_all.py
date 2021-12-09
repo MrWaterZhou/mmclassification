@@ -376,16 +376,17 @@ class Saver(Thread):
 
                 mosaic = self.do_mosaic(image, grayscale_cam, shape)
                 paste = self.paste_color_block(image, grayscale_cam, shape)
-                print(mosaic.shape)
-                print(paste.shape)
-                # 创建文件夹
-                filename = data['image']
-                save_path = '{}_mosaic_{}.jpg'.format(filename, label)
-                cv2.imwrite(save_path, mosaic)
 
-                filename = data['image']
-                save_path = '{}_paste_{}.jpg'.format(filename, label)
-                cv2.imwrite(save_path, paste)
+                # 创建文件夹
+                if mosaic:
+                    filename = data['image']
+                    save_path = '{}_mosaic_{}.jpg'.format(filename, label)
+                    cv2.imwrite(save_path, mosaic)
+
+                if paste:
+                    filename = data['image']
+                    save_path = '{}_paste_{}.jpg'.format(filename, label)
+                    cv2.imwrite(save_path, paste)
             except Exception as e:
                 print(e)
 
