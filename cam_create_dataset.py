@@ -250,8 +250,8 @@ class Loader(Thread):
                     image = cv2.resize(image, (224, 224))
                     image = np.expand_dims(image, 0)
                     self.image_queue.put((file, image, image_raw, label))
-                except:
-                    pass
+                except Exception as e:
+                    print(e)
         self.end = True
 
 
