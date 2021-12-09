@@ -377,20 +377,40 @@ class Saver(Thread):
 
                 mosaic = self.do_mosaic(image, grayscale_cam, shape)
                 paste = self.paste_color_block(image, grayscale_cam, shape)
-
+                valid_for_image = []
                 # 创建文件夹
                 if mosaic is not None:
                     filename = data['image']
                     save_path = '{}_mosaic_{}.jpg'.format(filename, label)
                     cv2.imwrite(save_path, mosaic)
+                    valid_for_image.append(save_path)
 
                 if paste is not None:
                     filename = data['image']
                     save_path = '{}_paste_{}.jpg'.format(filename, label)
                     cv2.imwrite(save_path, paste)
+                    valid_for_image.append(save_path)
 
                     save_path = '{}_transparent_{}.jpg'.format(filename, label)
                     cv2.imwrite(save_path, (0.4 * paste + 0.6 * image).astype(np.uint8))
+                    valid_for_image.append(save_path)
+                if len(valid_for_image)>0:
+                    filename = data['image']
+                    self.result_queue.put(json.dumps({filename: valid_for_image},ensure_ascii=False)+'\n')
+            except Exception as e:
+                print(e)
+
+class Logger(Thread):
+    def __init__(self, result_queue: Queue, filename: str):
+        super().__init__()
+        self.result_queue = result_queue
+        self.writer = open(filename, 'w')
+
+    def run(self) -> None:
+        while True:
+            try:
+                log = self.result_queue.get()
+                self.writer.write(log)
             except Exception as e:
                 print(e)
 
@@ -468,15 +488,20 @@ def main():
             saver.daemon = True
             saver.start()
 
+        logger = Logger(result_queue, args.source+'.add')
+        logger.daemon = True
+        logger.start()
+
         status = sum([int(t.end) for t in ts]) < len(ts)
         while (image_queue.qsize() > 0) or status:
             runner.run()
             status = sum([int(t.end) for t in ts]) < len(ts)
 
         import time
-        while save_queue.qsize() > 0:
+        while save_queue.qsize() + result_queue.qsize() > 0:
             time.sleep(10)
 
+        logger.writer.close()
         sys.exit()
 
 
