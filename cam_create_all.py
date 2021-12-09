@@ -378,12 +378,12 @@ class Saver(Thread):
                 paste = self.paste_color_block(image, grayscale_cam, shape)
 
                 # 创建文件夹
-                if mosaic:
+                if mosaic is not None:
                     filename = data['image']
                     save_path = '{}_mosaic_{}.jpg'.format(filename, label)
                     cv2.imwrite(save_path, mosaic)
 
-                if paste:
+                if paste is not None:
                     filename = data['image']
                     save_path = '{}_paste_{}.jpg'.format(filename, label)
                     cv2.imwrite(save_path, paste)
