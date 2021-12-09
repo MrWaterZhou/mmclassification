@@ -325,7 +325,17 @@ class Saver(Thread):
         self.save_queue = save_queue
         self.result_queue = result_queue
 
-    def do_mosaic(self, frame, x, y, w, h, neighbor=9):
+    def paste_color_block(self, image, grayscale_cam, shape):
+        image = image.copy()
+        center = np.where(grayscale_cam == np.max(grayscale_cam))
+        x = center[0][0]
+        y = center[1][0]
+        r = max(min(x, y, shape[0] - x, shape[1] - y) // 4, min(shape[0], shape[1]) // 10)
+
+        cv2.circle(image, (y, x), r, image.mean(axis=0).mean(axis=0).tolist(), -1)
+        return image
+
+    def do_mosaic(self, image, grayscale_cam, shape):
         """
         马赛克的实现原理是把图像上某个像素点一定范围邻域内的所有点用邻域内左上像素点的颜色代替，这样可以模糊细节，但是可以保留大体的轮廓。
         :param frame: opencv frame
@@ -335,6 +345,14 @@ class Saver(Thread):
         :param int h:  马赛克高
         :param int neighbor:  马赛克每一块的宽
         """
+        image = image.copy()
+        frame = image.copy()
+
+        x = 0
+        y = 0
+        w = shape[1]
+        h = shape[1]
+        neighbor = min(shape[1], shape[0])
         fh, fw = frame.shape[0], frame.shape[1]
         if (y + h > fh) or (x + w > fw):
             return
@@ -345,26 +363,27 @@ class Saver(Thread):
                 left_up = (rect[0], rect[1])
                 right_down = (rect[0] + neighbor - 1, rect[1] + neighbor - 1)  # 关键点2 减去一个像素
                 cv2.rectangle(frame, left_up, right_down, color, -1)
+        image[grayscale_cam > 0.5] = frame[grayscale_cam > 0.5]
+        return image
 
     def run(self) -> None:
         while True:
             data, image, grayscale_cam, label = self.save_queue.get()
 
             try:
-                # mosaic = image.copy()
                 shape = image.shape
                 grayscale_cam = cv2.resize(grayscale_cam, (shape[1], shape[0]))
-                # self.do_mosaic(mosaic, 0, 0, shape[1], shape[0], neighbor=min(shape[1], shape[0]) // 40)
-                # image[grayscale_cam > 0.5] = mosaic[grayscale_cam > 0.5]
 
+                mosaic = self.do_mosaic(image, grayscale_cam, shape)
+                paste = self.paste_color_block(image, grayscale_cam, shape)
                 # 创建文件夹
                 filename = data['image']
+                save_path = '{}_mosaic_{}.jpg'.format(filename, label)
+                cv2.imwrite(save_path, mosaic)
 
-                save_path = '{}_mask_{}.jpg'.format(filename, label)
-
-                cv2.imwrite(save_path, grayscale_cam * 255)
-
-
+                filename = data['image']
+                save_path = '{}_paste_{}.jpg'.format(filename, label)
+                cv2.imwrite(save_path, paste)
             except Exception as e:
                 print(e)
 
