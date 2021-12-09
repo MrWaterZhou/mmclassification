@@ -376,6 +376,8 @@ class Saver(Thread):
 
                 mosaic = self.do_mosaic(image, grayscale_cam, shape)
                 paste = self.paste_color_block(image, grayscale_cam, shape)
+                print(mosaic.shape)
+                print(paste.shape)
                 # 创建文件夹
                 filename = data['image']
                 save_path = '{}_mosaic_{}.jpg'.format(filename, label)
