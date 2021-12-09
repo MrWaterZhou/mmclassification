@@ -421,6 +421,7 @@ def main():
             loader.daemon = True
             loader.start()
             ts.append(loader)
+        os.makedirs(args.save_path, exist_ok=True)
 
         for i in range(num_postprocess_threrads):
             saver = Saver(args.save_path, save_queue)
