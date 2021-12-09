@@ -387,6 +387,9 @@ class Saver(Thread):
                     filename = data['image']
                     save_path = '{}_paste_{}.jpg'.format(filename, label)
                     cv2.imwrite(save_path, paste)
+
+                    save_path = '{}_transparent_{}.jpg'.format(filename, label)
+                    cv2.imwrite(save_path, (0.4 * paste + 0.6 * image).astype(np.uint8))
             except Exception as e:
                 print(e)
 
