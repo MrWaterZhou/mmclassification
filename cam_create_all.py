@@ -332,7 +332,8 @@ class Saver(Thread):
         contours, _ = cv2.findContours((cam_bin * 255).astype(np.uint8), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
         center, r = cv2.minEnclosingCircle(contours[0])
         center = np.int0(center)
-        cv2.circle(image, tuple(center), int(r * 0.6), np.random.randint(0, 255, 3).tolist(), -1)
+        cv2.circle(image, tuple(center), min(int(r * 0.6), min(shape[0], shape[1]) // 16),
+                   np.random.randint(0, 255, 3).tolist(), -1)
         return image
 
     def do_mosaic(self, image, grayscale_cam, shape):
