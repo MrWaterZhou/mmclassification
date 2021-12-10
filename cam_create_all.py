@@ -14,6 +14,7 @@ from threading import Thread
 from queue import Queue
 from typing import Tuple, List
 import json
+import gc
 
 from mmcls.apis import init_model
 from mmcls.datasets.pipelines import Compose
@@ -365,6 +366,7 @@ class Saver(Thread):
                 right_down = (rect[0] + neighbor - 1, rect[1] + neighbor - 1)  # 关键点2 减去一个像素
                 cv2.rectangle(frame, left_up, right_down, color, -1)
         image[grayscale_cam > 0.5] = frame[grayscale_cam > 0.5]
+        del frame
         return image
 
     def run(self) -> None:
@@ -384,6 +386,7 @@ class Saver(Thread):
                     save_path = '{}_mosaic_{}.jpg'.format(filename, label)
                     cv2.imwrite(save_path, mosaic)
                     valid_for_image.append(save_path)
+                    del mosaic
 
                 if paste is not None:
                     filename = data['image']
@@ -394,9 +397,13 @@ class Saver(Thread):
                     save_path = '{}_transparent_{}.jpg'.format(filename, label)
                     cv2.imwrite(save_path, (0.4 * paste + 0.6 * image).astype(np.uint8))
                     valid_for_image.append(save_path)
+                    del paste
                 if len(valid_for_image)>0:
                     filename = data['image']
                     self.result_queue.put(json.dumps({filename: valid_for_image},ensure_ascii=False)+'\n')
+                    del image
+                gc.collect()
+
             except Exception as e:
                 print(e)
 
