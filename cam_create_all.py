@@ -380,6 +380,7 @@ class Saver(Thread):
 
                 mosaic = self.do_mosaic(image, grayscale_cam, shape)
                 paste = self.paste_color_block(image, grayscale_cam, shape)
+                del grayscale_cam
                 valid_for_image = []
                 # 创建文件夹
                 if mosaic is not None:
