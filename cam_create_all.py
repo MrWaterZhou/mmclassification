@@ -245,12 +245,11 @@ class Loader(Thread):
             label_choices = [i for i, label in enumerate(self.labels) if file[label] == 1]
             if len(label_choices) > 0:
                 try:
+                    image_raw = cv2.imread(image_path)
+                    image = cv2.cvtColor(image_raw, cv2.COLOR_BGR2RGB)
+                    image = cv2.resize(image, (224, 224))
+                    image = np.expand_dims(image, 0)
                     for l in label_choices:
-                        image_raw = cv2.imread(image_path)
-                        image = cv2.cvtColor(image_raw, cv2.COLOR_BGR2RGB)
-                        image = cv2.resize(image, (224, 224))
-                        image = np.expand_dims(image, 0)
-                    # for l in label_choices:
                         self.image_queue.put((file, image, image_raw, l))
                 except Exception as e:
                     print(e)
@@ -282,8 +281,8 @@ class Runner:
         images = (images - self.mean) / self.std
         images = np.transpose(images, (0, 3, 1, 2))
         images = np.ascontiguousarray(images, dtype=np.float32)
-
-        return torch.tensor(images, device=self.device)
+        return images
+        # return torch.tensor(images, device=self.device)
 
     def run(self):
         try:
@@ -306,6 +305,7 @@ class Runner:
 
             labels = np.array(labels)
             images = self.preprocess(images)
+            images = torch.from_numpy(images).cuda()
 
             grayscale_cams = self.model(
                 input_tensor=images,
@@ -380,7 +380,6 @@ class Saver(Thread):
 
                 mosaic = self.do_mosaic(image, grayscale_cam, shape)
                 paste = self.paste_color_block(image, grayscale_cam, shape)
-                del grayscale_cam
                 valid_for_image = []
                 # 创建文件夹
                 if mosaic is not None:
@@ -404,6 +403,7 @@ class Saver(Thread):
                     filename = data['image']
                     self.result_queue.put(json.dumps({filename: valid_for_image},ensure_ascii=False)+'\n')
                     del image
+                gc.collect()
 
             except Exception as e:
                 print(e)
