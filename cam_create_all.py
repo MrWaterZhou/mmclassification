@@ -305,7 +305,7 @@ class Runner:
 
             labels = np.array(labels)
             images = self.preprocess(images)
-            images = torch.from_numpy(images).cuda()
+            images = torch.from_numpy(images).to('cuda:0')
 
             grayscale_cams = self.model(
                 input_tensor=images,
