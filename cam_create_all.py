@@ -403,7 +403,7 @@ class Saver(Thread):
                     filename = data['image']
                     self.result_queue.put(json.dumps({filename: valid_for_image},ensure_ascii=False)+'\n')
                     del image
-                gc.collect()
+
 
             except Exception as e:
                 print(e)
