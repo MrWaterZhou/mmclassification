@@ -314,6 +314,7 @@ class Runner:
                     target_category=labels,
                     eigen_smooth=self.args.eigen_smooth,
                     aug_smooth=self.args.aug_smooth)
+                gc.collect()
                 print(psutil.virtual_memory())
             for filename, image_raw, grayscale_cam, label in zip(filenames, images_raw, grayscale_cams, labels_list):
                 self.save_queue.put((filename, image_raw, grayscale_cam, label))
