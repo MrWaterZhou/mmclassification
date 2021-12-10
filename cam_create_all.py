@@ -307,11 +307,12 @@ class Runner:
             images = self.preprocess(images)
             images = torch.from_numpy(images).to('cuda:0')
 
-            grayscale_cams = self.model(
-                input_tensor=images,
-                target_category=labels,
-                eigen_smooth=self.args.eigen_smooth,
-                aug_smooth=self.args.aug_smooth)
+            with torch.no_grad():
+                grayscale_cams = self.model(
+                    input_tensor=images,
+                    target_category=labels,
+                    eigen_smooth=self.args.eigen_smooth,
+                    aug_smooth=self.args.aug_smooth)
 
             for filename, image_raw, grayscale_cam, label in zip(filenames, images_raw, grayscale_cams, labels_list):
                 self.save_queue.put((filename, image_raw, grayscale_cam, label))
