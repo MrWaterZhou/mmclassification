@@ -257,7 +257,8 @@ class Loader(Thread):
 
 
 class Runner:
-    def __init__(self, args, cam_model, max_batch_size, image_queue: Queue, save_queue: Queue, arch='regnetx',
+    def __init__(self, args, model, target_layers, use_cuda, reshape_transform, max_batch_size, image_queue: Queue,
+                 save_queue: Queue, arch='regnetx',
                  device='cpu'):
         assert arch in {'regnetx', 'resnet'}
         self.mean = 0
@@ -267,7 +268,8 @@ class Runner:
             self.BGR = True
         self.mean = np.array([123.675, 116.28, 103.53])
         self.std = np.array([58.395, 57.12, 57.375])
-        self.model = cam_model
+        self.cam_args = {'method': args.method, 'model': model, 'target_layers': target_layers, 'use_cuda': use_cuda,
+                         'reshape_transform': reshape_transform}
         self.image_queue = image_queue
         self.max_batch_size = max_batch_size
         self.device = device
@@ -307,14 +309,14 @@ class Runner:
             images = self.preprocess(images)
             images = torch.from_numpy(images).to('cuda:0')
             import psutil
-            for i in range(100):
+            with init_cam(**self.cam_args) as cam:
 
-                grayscale_cams = self.model(
+                grayscale_cams = cam(
                     input_tensor=images,
                     target_category=labels,
                     eigen_smooth=self.args.eigen_smooth,
                     aug_smooth=self.args.aug_smooth)
-                gc.collect()
+
                 print(psutil.virtual_memory())
             for filename, image_raw, grayscale_cam, label in zip(filenames, images_raw, grayscale_cams, labels_list):
                 self.save_queue.put((filename, image_raw, grayscale_cam, label))
@@ -402,14 +404,15 @@ class Saver(Thread):
                     cv2.imwrite(save_path, (0.4 * paste + 0.6 * image).astype(np.uint8))
                     valid_for_image.append(save_path)
                     del paste
-                if len(valid_for_image)>0:
+                if len(valid_for_image) > 0:
                     filename = data['image']
-                    self.result_queue.put(json.dumps({filename: valid_for_image},ensure_ascii=False)+'\n')
+                    self.result_queue.put(json.dumps({filename: valid_for_image}, ensure_ascii=False) + '\n')
                     del image
 
 
             except Exception as e:
                 print(e)
+
 
 class Logger(Thread):
     def __init__(self, result_queue: Queue, filename: str):
@@ -477,7 +480,8 @@ def main():
         max_batch_size = 32
         num_postprocess_threrads = 4
 
-        runner = Runner(args, cam, max_batch_size, image_queue, save_queue, arch='regnetx',
+        runner = Runner(args, model, target_layers, use_cuda, reshape_transform, max_batch_size, image_queue,
+                        save_queue, arch='regnetx',
                         device=args.device)
 
         import glob
@@ -499,7 +503,7 @@ def main():
             saver.daemon = True
             saver.start()
 
-        logger = Logger(result_queue, args.source+'.add')
+        logger = Logger(result_queue, args.source + '.add')
         logger.daemon = True
         logger.start()
 
