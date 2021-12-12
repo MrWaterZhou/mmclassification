@@ -81,4 +81,4 @@ if __name__ == '__main__':
         with torch.no_grad():
             result = model(dummy)
             print(result)
-            print(features_blobs[0])
+            print(len(features_blobs), features_blobs[0][0][0][0])
