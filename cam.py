@@ -8,8 +8,8 @@ from functools import partial
 def parse_args():
     parser = argparse.ArgumentParser(description='Visualize CAM')
     parser.add_argument('config', help='Config file')
-    parser.add_argument('source', help='Image file')
-    parser.add_argument('save_path', help='save path')
+    parser.add_argument('--source', help='Image file')
+    parser.add_argument('--save_path', help='save path')
     parser.add_argument('--device', default='cpu', help='Device to use cpu')
     parser.add_argument(
         '--target-layers',
