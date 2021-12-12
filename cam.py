@@ -1,8 +1,11 @@
 import argparse
 import os
+
+import torch
 from mmcv import Config, DictAction
 from mmcls.apis import init_model
 from functools import partial
+import numpy as np
 
 
 def parse_args():
@@ -61,18 +64,20 @@ if __name__ == '__main__':
     fc_layer = get_layer('model.head.fc', model)
 
     features_blobs = []
+
+
     def hook_feature(module, input, output):  # input是注册层的输入 output是注册层的输出
         print("hook input", input[0].shape)
         features_blobs.append(output.data.cpu().numpy())
+
 
     feature_layer.register_forward_hook(hook_feature)
 
     weight_softmax = list(fc_layer.parameters())[0].data.numpy()
 
-
-
-
-
-    print(model)
-    print(fc_layer)
-    print(weight_softmax)
+    dummy = np.random.uniform(0, 1, (1, 3, 224, 224)).astype(np.float32)
+    dummy = torch.from_numpy(dummy).to(args.device)
+    with torch.no_grad():
+        result = model(dummy)
+        print(result)
+        print(features_blobs)
