@@ -30,9 +30,6 @@ def get_layer(layer_str, model):
     assert layer_str.startswith(
         'model'), "target-layer must start with 'model'"
     layer_items = layer_str.strip().split('.')
-    assert not (layer_items[-1].startswith('relu')
-                or layer_items[-1].startswith('bn')
-                ), "target-layer can't be 'bn' or 'relu'"
     for item_str in layer_items[1:]:
         if hasattr(cur_layer, item_str):
             cur_layer = getattr(cur_layer, item_str)
