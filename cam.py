@@ -90,7 +90,7 @@ class Cam:
             preds = np.vstack(preds)
         print(preds.shape)
         feature_conv = self.features['feature_map']
-        print(feature_conv)
+        print(feature_conv.shape)
 
         # 验证shape
         bz, nc, h, w = feature_conv.shape  # 获取feature_conv特征的尺寸
