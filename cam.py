@@ -224,9 +224,6 @@ class Saver(Thread):
         w = shape[1]
         h = shape[0]
         neighbor = min(shape[1], shape[0]) // 40
-        fh, fw = frame.shape[0], frame.shape[1]
-        if (y + h > fh) or (x + w > fw):
-            return
         for i in range(0, h - neighbor, neighbor):  # 关键点0 减去neightbour 防止溢出
             for j in range(0, w - neighbor, neighbor):
                 rect = [j + x, i + y, neighbor, neighbor]
