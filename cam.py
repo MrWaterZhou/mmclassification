@@ -62,4 +62,4 @@ if __name__ == '__main__':
 
     print(model)
     print(fc_layer)
-    print(fc_layer.parameters())
+    print(list(fc_layer.parameters()))
