@@ -238,11 +238,12 @@ class Saver(Thread):
                     grayscale_cam = grayscale_cams[label]
                     grayscale_cam = cv2.resize(grayscale_cam, (224, 224))
                     grayscale_cam = cv2.resize(grayscale_cam, (shape[1], shape[0]))
-                    heatmap = cv2.applyColorMap(grayscale_cam, cv2.COLORMAP_JET)
+
+                    heatmap = cv2.applyColorMap(np.uint8(grayscale_cam * 255), cv2.COLORMAP_JET)
                     heatmap = heatmap * 0.3 + image * 0.5
                     filename = data['image']
                     save_path = '{}_heatmap_{}.jpg'.format(filename, label)
-                    cv2.imwrite(save_path,heatmap)
+                    cv2.imwrite(save_path, heatmap)
 
                     mosaic = self.do_mosaic(image, grayscale_cam, shape)
                     paste = self.paste_color_block(image, grayscale_cam, shape)
@@ -337,5 +338,6 @@ if __name__ == '__main__':
         time.sleep(10)
 
     import sys
+
     logger.writer.close()
     sys.exit()
