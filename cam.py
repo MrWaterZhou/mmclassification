@@ -56,42 +56,74 @@ def load_model(config_path, device):
     return model
 
 
-def returnCAM(feature_conv, weight_softmax, class_idx):
-    # generate the class activation maps upsample to 256x256
-    size_upsample = (224, 224)
-    bz, nc, h, w = feature_conv.shape  # 获取feature_conv特征的尺寸
-    num_classes, num_channels = weight_softmax.shape
-    assert nc == num_channels
+class Cam:
+    def __init__(self, model, target_layer, fc_layer_name='model.head.fc', device='cpu'):
+        self.model = model
+        self.feature_layer = get_layer(target_layer, model)
+        fc_layer = get_layer(fc_layer_name, model)
+        self.weight_softmax = list(fc_layer.parameters())[0].data.numpy()
+        self.features = {}
 
-    cams = np.einsum('bchw,lc->blhw', feature_conv, weight_softmax)
-    return cams
+        def hook_feature(module, input, output):  # input是注册层的输入 output是注册层的输出
+            self.features['feature_map'] = output.data.cpu().numpy()
 
+        self.feature_layer.register_forward_hook(hook_feature)
+        self.mean = np.array([123.675, 116.28, 103.53])
+        self.std = np.array([58.395, 57.12, 57.375])
+        self.device = device
+
+    def preprocess(self, images):
+        images = np.concatenate(images, 0)
+        images = images[:, :, :, ::-1]
+        images = (images - self.mean) / self.std
+        images = np.transpose(images, (0, 3, 1, 2))
+        images = np.ascontiguousarray(images, dtype=np.float32)
+        return images
+
+    def get_cam_matrix(self, images, labels=None):
+        images = self.preprocess(images)
+        images = torch.from_numpy(images).to(self.device)
+        preds = self.model(images)  # batch_size, num_classes
+        feature_conv = self.features['feature_map']
+
+        # 验证shape
+        bz, nc, h, w = feature_conv.shape  # 获取feature_conv特征的尺寸
+        num_classes, num_channels = self.weight_softmax.shape
+        assert nc == num_channels
+
+        # 批处理归一化
+        cams = np.einsum('bchw,lc->blhw', feature_conv, self.weight_softmax)
+        # normalize
+        min_cams = np.min(cams, axis=(-1, -2), keepdims=True)
+        cams = cams - min_cams
+        max_cams = np.max(cams, axis=(-1, -2), keepdims=True)
+        cams = cams / max_cams  # batch_size, num_classes, h,w
+        cams = np.int8(cams * 255)
+
+        if labels is None:
+            xs, ys = np.where(preds > 0.5)
+            xs = xs.tolist()
+            ys = ys.tolist()
+        else:
+            xs = []
+            ys = []
+            for x, label in enumerate(labels):
+                xs.extend([x] * len(label))
+                ys.extend(label)
+
+        results = [{}] * bz
+        for x, y in zip(xs, ys):
+            cam = cams[x, y, :, :]
+            results[x][y] = cam
+        return results
 
 
 if __name__ == '__main__':
     args = parse_args()
     model = load_model(args.config, args.device).eval()
 
-    feature_layer = get_layer(args.target_layer, model)
-    fc_layer = get_layer('model.head.fc', model)
+    cam_model = Cam(model, args.target_layer, device=args.device)
 
-    features = {}
-
-
-    def hook_feature(module, input, output):  # input是注册层的输入 output是注册层的输出
-        features['feature_map'] = output.data.cpu().numpy()
-
-
-    feature_layer.register_forward_hook(hook_feature)
-
-    weight_softmax = list(fc_layer.parameters())[0].data.numpy()
-
-    for i in range(3):
-        dummy = np.random.uniform(0, 1, (1, 3, 224, 224)).astype(np.float32)
-        dummy = torch.from_numpy(dummy).to(args.device)
-        with torch.no_grad():
-            result = model(dummy)
-            print(result)
-            print(features['feature_map'][0][0][0])
-            cams = returnCAM(features['feature_map'],weight_softmax,1)
-            print(cams.shape)
+    images = [np.random.uniform(0, 255, (1, 3, 224, 224))]
+    cams = cam_model.get_cam_matrix(images, [0])
+    print(cams)
