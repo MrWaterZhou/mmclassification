@@ -84,8 +84,9 @@ class Cam:
 
     def get_cam_matrix(self, images, labels=None):
         images = self.preprocess(images)
-        images = torch.from_numpy(images).to(self.device)
-        preds = self.model.forward(images)  # batch_size, num_classes
+        with torch.no_grad():
+            images = torch.from_numpy(images).to(self.device)
+            preds = self.model.forward(images)  # batch_size, num_classes
         print(preds)
         feature_conv = self.features['feature_map']
 
