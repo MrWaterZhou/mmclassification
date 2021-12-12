@@ -234,6 +234,7 @@ class Saver(Thread):
         while True:
             data, image, grayscale_cams = self.save_queue.get()
             shape = image.shape
+            print(shape)
             try:
                 for label in grayscale_cams:
                     grayscale_cam = grayscale_cams[label]
