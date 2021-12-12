@@ -248,6 +248,7 @@ class Saver(Thread):
         while True:
             data, image, grayscale_cams = self.save_queue.get()
             shape = image.shape
+            valid_for_image = []
             try:
                 for label in grayscale_cams:
                     grayscale_cam = grayscale_cams[label]
@@ -261,7 +262,7 @@ class Saver(Thread):
 
                     mosaic = self.do_mosaic(image, grayscale_cam, shape)
                     paste = self.paste_color_block(image, grayscale_cam, shape)
-                    valid_for_image = []
+
                     # 创建文件夹
                     if mosaic is not None:
                         filename = data['image']
@@ -280,9 +281,10 @@ class Saver(Thread):
                         cv2.imwrite(save_path, (0.4 * paste + 0.6 * image).astype(np.uint8))
                         valid_for_image.append(save_path)
                         del paste
-                    if len(valid_for_image) > 0:
-                        filename = data['image']
-                        self.result_queue.put(json.dumps({filename: valid_for_image}, ensure_ascii=False) + '\n')
+
+                if len(valid_for_image) > 0:
+                    filename = data['image']
+                    self.result_queue.put(json.dumps({filename: valid_for_image}, ensure_ascii=False) + '\n')
             except Exception as e:
                 print(e)
 
