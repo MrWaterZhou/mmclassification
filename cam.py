@@ -58,7 +58,7 @@ if __name__ == '__main__':
     model = load_model(args.config, args.device)
 
     feature_layer = get_layer(args.target_layer, model)
-    fc_layer = get_layer('model.backbone.head.fc', model)
+    fc_layer = get_layer('model.head.fc', model)
 
     print(model)
     print(fc_layer)
