@@ -107,7 +107,7 @@ class Cam:
         # cams = np.uint8(cams * 255)
 
         if labels is None:
-            xs, ys = np.where(preds[0] > 0.5)
+            xs, ys = np.where(preds > 0.5)
             xs = xs.tolist()
             ys = ys.tolist()
         else:
