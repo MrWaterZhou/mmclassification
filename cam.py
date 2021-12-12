@@ -118,11 +118,13 @@ class Cam:
                 ys.extend(label)
 
         results = [{}] * bz
+        scores = [{}] * bz
         print(xs, ys)
         for x, y in zip(xs, ys):
             cam = cams[x, y, :, :]
             results[x][y] = cam
-        return results
+            scores[x][y] = preds[x][y]
+        return results, scores
 
 
 class Loader(Thread):
@@ -176,9 +178,9 @@ class Runner:
                 images_raw.append(image_raw)
                 labels.append(label)
 
-            grayscale_cams = self.cam_model.get_cam_matrix(images, labels)
+            grayscale_cams, scores = self.cam_model.get_cam_matrix(images, labels)
 
-            for filename, image_raw, grayscale_cam in zip(filenames, images_raw, grayscale_cams):
+            for filename, image_raw, grayscale_cam, score in zip(filenames, images_raw, grayscale_cams, scores):
                 self.save_queue.put((filename, image_raw, grayscale_cam))
 
         except Exception as e:
@@ -246,18 +248,19 @@ class Saver(Thread):
 
     def run(self) -> None:
         while True:
-            data, image, grayscale_cams = self.save_queue.get()
+            data, image, grayscale_cams, scores = self.save_queue.get()
             shape = image.shape
             valid_for_image = []
             try:
                 for label in grayscale_cams:
+                    score = scores[label]
                     grayscale_cam = grayscale_cams[label]
                     grayscale_cam = cv2.resize(grayscale_cam, (224, 224))
                     grayscale_cam = cv2.resize(grayscale_cam, (shape[1], shape[0]))
 
                     heatmap = self.show_cam_grad(grayscale_cam, image)
                     filename = data['image']
-                    save_path = '{}_heatmap_{}.jpg'.format(filename, label)
+                    save_path = '{}_heatmap_{}_{}.jpg'.format(filename, label, score)
                     cv2.imwrite(save_path, heatmap)
 
                     mosaic = self.do_mosaic(image, grayscale_cam, shape)
@@ -266,18 +269,18 @@ class Saver(Thread):
                     # 创建文件夹
                     if mosaic is not None:
                         filename = data['image']
-                        save_path = '{}_mosaic_{}.jpg'.format(filename, label)
+                        save_path = '{}_mosaic_{}_{}.jpg'.format(filename, label, score)
                         cv2.imwrite(save_path, mosaic)
                         valid_for_image.append(save_path)
                         del mosaic
 
                     if paste is not None:
                         filename = data['image']
-                        save_path = '{}_paste_{}.jpg'.format(filename, label)
+                        save_path = '{}_paste_{}_{}.jpg'.format(filename, label,score)
                         cv2.imwrite(save_path, paste)
                         valid_for_image.append(save_path)
 
-                        save_path = '{}_transparent_{}.jpg'.format(filename, label)
+                        save_path = '{}_transparent_{}_{}.jpg'.format(filename, label,score)
                         cv2.imwrite(save_path, (0.4 * paste + 0.6 * image).astype(np.uint8))
                         valid_for_image.append(save_path)
                         del paste
