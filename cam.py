@@ -122,5 +122,5 @@ if __name__ == '__main__':
     cam_model = Cam(model, args.target_layer, device=args.device)
 
     images = [np.random.uniform(0, 255, (1, 224, 224, 3))]
-    cams = cam_model.get_cam_matrix(images, [[0]])
+    cams = cam_model.get_cam_matrix(images, [[0,1,2,3,4,5]])
     print(cams)
