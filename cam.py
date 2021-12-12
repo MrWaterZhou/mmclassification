@@ -86,6 +86,7 @@ class Cam:
         images = self.preprocess(images)
         images = torch.from_numpy(images).to(self.device)
         preds = self.model(images)  # batch_size, num_classes
+        print(preds)
         feature_conv = self.features['feature_map']
 
         # 验证shape
