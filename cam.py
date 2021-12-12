@@ -55,7 +55,7 @@ def load_model(config_path, device):
 
 if __name__ == '__main__':
     args = parse_args()
-    model = load_model(args.config, args.device)
+    model = load_model(args.config, args.device).eval()
 
     feature_layer = get_layer(args.target_layer, model)
     fc_layer = get_layer('model.head.fc', model)
