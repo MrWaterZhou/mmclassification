@@ -11,6 +11,7 @@ from threading import Thread
 from queue import Queue
 from typing import Tuple, List
 import json
+from pytorch_grad_cam.utils.image import show_cam_on_image
 
 
 def parse_args():
@@ -229,6 +230,15 @@ class Saver(Thread):
         image[grayscale_cam > 0.5] = frame[grayscale_cam > 0.5]
         return image
 
+    def show_cam_grad(self, grayscale_cam, src_img):
+        """fuse src_img and grayscale_cam and show or save."""
+
+        src_img = np.float32(src_img) / 255
+
+        visualization_img = show_cam_on_image(
+            src_img, grayscale_cam, use_rgb=False)
+        return visualization_img
+
     def run(self) -> None:
         while True:
             data, image, grayscale_cams = self.save_queue.get()
@@ -239,8 +249,7 @@ class Saver(Thread):
                     grayscale_cam = cv2.resize(grayscale_cam, (224, 224))
                     grayscale_cam = cv2.resize(grayscale_cam, (shape[1], shape[0]))
 
-                    heatmap = cv2.applyColorMap(np.uint8(grayscale_cam * 255), cv2.COLORMAP_JET)
-                    heatmap = heatmap * 0.3 + image * 0.5
+                    heatmap = self.show_cam_grad(grayscale_cam, image)
                     filename = data['image']
                     save_path = '{}_heatmap_{}.jpg'.format(filename, label)
                     cv2.imwrite(save_path, heatmap)
