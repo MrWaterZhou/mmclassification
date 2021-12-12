@@ -118,6 +118,7 @@ class Cam:
                 ys.extend(label)
 
         results = [{}] * bz
+        print(xs, ys)
         for x, y in zip(xs, ys):
             cam = cams[x, y, :, :]
             results[x][y] = cam
