@@ -177,7 +177,6 @@ class Runner:
                 labels.append(label)
 
             grayscale_cams = self.cam_model.get_cam_matrix(images, labels)
-            print(grayscale_cams)
 
             for filename, image_raw, grayscale_cam in zip(filenames, images_raw, grayscale_cams):
                 self.save_queue.put((filename, image_raw, grayscale_cam))
