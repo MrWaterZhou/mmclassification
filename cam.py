@@ -56,6 +56,18 @@ def load_model(config_path, device):
     return model
 
 
+def returnCAM(feature_conv, weight_softmax, class_idx):
+    # generate the class activation maps upsample to 256x256
+    size_upsample = (224, 224)
+    bz, nc, h, w = feature_conv.shape  # 获取feature_conv特征的尺寸
+    num_classes, num_channels = weight_softmax.shape
+    assert nc == num_channels
+
+    cams = np.einsum('bchw,lc->blhw', feature_conv, weight_softmax)
+    return cams
+
+
+
 if __name__ == '__main__':
     args = parse_args()
     model = load_model(args.config, args.device).eval()
@@ -81,3 +93,5 @@ if __name__ == '__main__':
             result = model(dummy)
             print(result)
             print(features['feature_map'][0][0][0])
+            cams = returnCAM(features['feature_map'],weight_softmax,1)
+            print(cams.shape)
