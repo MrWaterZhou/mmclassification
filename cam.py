@@ -75,9 +75,10 @@ if __name__ == '__main__':
 
     weight_softmax = list(fc_layer.parameters())[0].data.numpy()
 
-    dummy = np.random.uniform(0, 1, (1, 3, 224, 224)).astype(np.float32)
-    dummy = torch.from_numpy(dummy).to(args.device)
-    with torch.no_grad():
-        result = model(dummy)
-        print(result)
-        print(features_blobs)
+    for i in range(3):
+        dummy = np.random.uniform(0, 1, (1, 3, 224, 224)).astype(np.float32)
+        dummy = torch.from_numpy(dummy).to(args.device)
+        with torch.no_grad():
+            result = model(dummy)
+            print(result)
+            print(features_blobs[0])
