@@ -12,14 +12,14 @@ def parse_args():
     parser.add_argument('--save_path', help='save path')
     parser.add_argument('--device', default='cpu', help='Device to use cpu')
     parser.add_argument(
-        '--target-layers',
-        default=['model.backbone.layer4.0'],
-        nargs='+',
+        '--target-layer',
+        default='model.backbone.layer4.1.conv3',
         type=str,
         help='The target layers to get CAM')
 
     args = parser.parse_args()
     return args
+
 
 def get_layer(layer_str, model):
     """get model lyaer from given str."""
@@ -39,8 +39,6 @@ def get_layer(layer_str, model):
     return cur_layer
 
 
-
-
 def load_model(config_path, device):
     cfg = Config.fromfile(config_path)
     dir = os.path.dirname(config_path)
@@ -54,11 +52,11 @@ def load_model(config_path, device):
 
     return model
 
+
 if __name__ == '__main__':
     args = parse_args()
-    model = load_model(args.config,args.device)
+    model = load_model(args.config, args.device)
+
+    layer = get_layer(args.target_layer)
     print(model)
-
-
-
-
+    print(layer)
