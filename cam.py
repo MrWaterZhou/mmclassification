@@ -87,8 +87,10 @@ class Cam:
         with torch.no_grad():
             images = torch.from_numpy(images).to(self.device)
             preds = self.model.forward(images)  # batch_size, num_classes
-        print(preds)
+            preds = np.vstack(preds)
+        print(preds.shape)
         feature_conv = self.features['feature_map']
+        print(feature_conv)
 
         # 验证shape
         bz, nc, h, w = feature_conv.shape  # 获取feature_conv特征的尺寸
