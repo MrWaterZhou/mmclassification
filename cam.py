@@ -235,7 +235,7 @@ class Saver(Thread):
                 right_down = (rect[0] + neighbor - 1, rect[1] + neighbor - 1)  # 关键点2 减去一个像素
                 cv2.rectangle(frame, left_up, right_down, color, -1)
         image[grayscale_cam > 0.5] = frame[grayscale_cam > 0.5]
-        return image
+        return frame
 
     def show_cam_grad(self, grayscale_cam, src_img):
         """fuse src_img and grayscale_cam and show or save."""
