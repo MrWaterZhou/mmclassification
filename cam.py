@@ -60,6 +60,19 @@ if __name__ == '__main__':
     feature_layer = get_layer(args.target_layer, model)
     fc_layer = get_layer('model.head.fc', model)
 
+    features_blobs = []
+    def hook_feature(module, input, output):  # input是注册层的输入 output是注册层的输出
+        print("hook input", input[0].shape)
+        features_blobs.append(output.data.cpu().numpy())
+
+    feature_layer.register_forward_hook(hook_feature)
+
+    weight_softmax = list(fc_layer.parameters())[0].data.numpy()
+
+
+
+
+
     print(model)
     print(fc_layer)
-    print(list(fc_layer.parameters()))
+    print(weight_softmax)
