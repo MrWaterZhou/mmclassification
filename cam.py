@@ -315,7 +315,7 @@ if __name__ == '__main__':
     result_queue = Queue(10000)
 
     num_preprocess_threads = 8
-    max_batch_size = 32
+    max_batch_size = 1
     num_postprocess_threrads = 4
 
     runner = Runner(cam_model, 64, image_queue, save_queue)
