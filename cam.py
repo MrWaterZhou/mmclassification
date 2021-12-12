@@ -318,7 +318,7 @@ if __name__ == '__main__':
     max_batch_size = 1
     num_postprocess_threrads = 4
 
-    runner = Runner(cam_model, 64, image_queue, save_queue)
+    runner = Runner(cam_model, 1, image_queue, save_queue)
 
     import glob
     import json
