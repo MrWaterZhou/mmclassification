@@ -16,7 +16,7 @@ def parse_args():
     parser.add_argument('--device', default='cpu', help='Device to use cpu')
     parser.add_argument(
         '--target-layer',
-        default='model.backbone.layer4.1.conv3',
+        default='model.backbone.layer4.1.relu',
         type=str,
         help='The target layers to get CAM')
 
