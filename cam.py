@@ -181,7 +181,7 @@ class Runner:
             grayscale_cams, scores = self.cam_model.get_cam_matrix(images, labels)
 
             for filename, image_raw, grayscale_cam, score in zip(filenames, images_raw, grayscale_cams, scores):
-                self.save_queue.put((filename, image_raw, grayscale_cam))
+                self.save_queue.put((filename, image_raw, grayscale_cam, score))
 
         except Exception as e:
             print(e.__str__())
@@ -276,11 +276,11 @@ class Saver(Thread):
 
                     if paste is not None:
                         filename = data['image']
-                        save_path = '{}_paste_{}_{}.jpg'.format(filename, label,score)
+                        save_path = '{}_paste_{}_{}.jpg'.format(filename, label, score)
                         cv2.imwrite(save_path, paste)
                         valid_for_image.append(save_path)
 
-                        save_path = '{}_transparent_{}_{}.jpg'.format(filename, label,score)
+                        save_path = '{}_transparent_{}_{}.jpg'.format(filename, label, score)
                         cv2.imwrite(save_path, (0.4 * paste + 0.6 * image).astype(np.uint8))
                         valid_for_image.append(save_path)
                         del paste
