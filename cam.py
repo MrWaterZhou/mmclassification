@@ -221,7 +221,7 @@ class Saver(Thread):
 
         x = 0
         y = 0
-        w = shape[1]
+        w = shape[0]
         h = shape[1]
         neighbor = min(shape[1], shape[0]) // 40
         fh, fw = frame.shape[0], frame.shape[1]
