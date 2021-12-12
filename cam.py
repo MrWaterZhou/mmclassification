@@ -172,6 +172,7 @@ class Runner:
                 labels.append(label)
 
             grayscale_cams = self.cam_model.get_cam_matrix(images, labels)
+            print(labels)
 
             for filename, image_raw, grayscale_cam in zip(filenames, images_raw, grayscale_cams):
                 self.save_queue.put((filename, image_raw, grayscale_cam))
@@ -248,7 +249,6 @@ class Saver(Thread):
                     grayscale_cam = grayscale_cams[label]
                     grayscale_cam = cv2.resize(grayscale_cam, (224, 224))
                     grayscale_cam = cv2.resize(grayscale_cam, (shape[1], shape[0]))
-                    print(grayscale_cam)
 
                     heatmap = self.show_cam_grad(grayscale_cam, image)
                     filename = data['image']
