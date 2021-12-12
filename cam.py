@@ -171,7 +171,7 @@ class Runner:
                 images_raw.append(image_raw)
                 labels.append(label)
 
-            grayscale_cams = self.cam_model.get_cam_matrix(images, labels)
+            grayscale_cams = self.cam_model.get_cam_matrix(images, None)
             print(labels)
 
             for filename, image_raw, grayscale_cam in zip(filenames, images_raw, grayscale_cams):
