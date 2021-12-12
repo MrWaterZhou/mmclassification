@@ -99,7 +99,7 @@ class Cam:
         cams = cams - min_cams
         max_cams = np.max(cams, axis=(-1, -2), keepdims=True)
         cams = cams / max_cams  # batch_size, num_classes, h,w
-        cams = np.uint8(cams * 255)
+        # cams = np.uint8(cams * 255)
 
         if labels is None:
             xs, ys = np.where(preds > 0.5)
