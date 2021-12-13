@@ -63,7 +63,7 @@ class Cam:
         self.model = model
         self.feature_layer = get_layer(target_layer, model)
         fc_layer = get_layer(fc_layer_name, model)
-        self.weight_softmax = list(fc_layer.parameters())[0].data.numpy()
+        self.weight_softmax = list(fc_layer.parameters())[0].cpu().data.numpy()
         self.features = {}
 
         def hook_feature(module, input, output):  # input是注册层的输入 output是注册层的输出
