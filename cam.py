@@ -54,8 +54,8 @@ def load_model(config_path, device):
 
     origin_forward = model.forward
     model.forward = partial(model.forward, img_metas={}, return_loss=False)
-
-    return model
+    classes = cfg['data']['train']['classes']
+    return model, classes
 
 
 class Cam:
@@ -63,7 +63,7 @@ class Cam:
         self.model = model
         self.feature_layer = get_layer(target_layer, model)
         fc_layer = get_layer(fc_layer_name, model)
-        self.weight_softmax = list(fc_layer.parameters())[0].data.numpy()
+        self.weight_softmax = list(fc_layer.parameters())[0].cpu().data.numpy()
         self.features = {}
 
         def hook_feature(module, input, output):  # input是注册层的输入 output是注册层的输出
@@ -128,13 +128,12 @@ class Cam:
 
 
 class Loader(Thread):
-    def __init__(self, file_list: List, image_queue: Queue):
+    def __init__(self, file_list: List, image_queue: Queue, labels: List):
         super().__init__()
         self.file_list = file_list
         self.image_queue = image_queue
         self.end = False
-        self.labels = ['性感_胸部', '色情_女胸', '色情_男下体', '色情_口交',
-                       '性感_内衣裤', '性感_男性胸部', '色情_裸露下体', '性感_腿部特写']
+        self.labels = labels
 
     def run(self) -> None:
         for file in self.file_list:
@@ -178,7 +177,7 @@ class Runner:
                 images_raw.append(image_raw)
                 labels.append(label)
 
-            grayscale_cams, scores = self.cam_model.get_cam_matrix(images, None)
+            grayscale_cams, scores = self.cam_model.get_cam_matrix(images, labels)
 
             for filename, image_raw, grayscale_cam, score in zip(filenames, images_raw, grayscale_cams, scores):
                 self.save_queue.put((filename, image_raw, grayscale_cam, score))
@@ -306,7 +305,8 @@ class Logger(Thread):
 
 if __name__ == '__main__':
     args = parse_args()
-    model = load_model(args.config, args.device).eval()
+    model, classes = load_model(args.config, args.device)
+    model.eval()
 
     cam_model = Cam(model, args.target_layer, device=args.device)
 
@@ -329,7 +329,7 @@ if __name__ == '__main__':
     chunk_size = len(files) // num_preprocess_threads
     ts = []
     for i in range(num_preprocess_threads):
-        loader = Loader(files[i * chunk_size: (i + 1) * chunk_size], image_queue)
+        loader = Loader(files[i * chunk_size: (i + 1) * chunk_size], image_queue, classes)
         loader.daemon = True
         loader.start()
         ts.append(loader)
