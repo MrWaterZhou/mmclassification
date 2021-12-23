@@ -215,7 +215,7 @@ class Saver(Thread):
         """
         image = image.copy()
         max_width = min(shape[0],shape[1]) // 20
-        points = np.where(grayscale_cam)
+        points = np.where(grayscale_cam > 0.5)
         points_length = len(points[0])
 
 
