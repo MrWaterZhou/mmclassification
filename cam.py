@@ -219,17 +219,18 @@ class Saver(Thread):
         contours, _ = cv2.findContours((cam_bin * 255).astype(np.uint8), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 
         for contour in contours:
-            points = contour[:, 0, :].tolist()
+            center, r = cv2.minEnclosingCircle(contour)
+            r = int(r)
+            center_x = int(center[0])
+            center_y = int(center[1])
 
             times_k = np.random.randint(times)
             for i in range(times_k):
-                start_point = points[np.random.randint(len(points))]
-                start_x = start_point[0]
-                start_y = start_point[1]
+                start_x = center_x + np.random.randint((-r, r))
+                start_y = center_y + np.random.randint((-r, r))
 
-                end_point = points[np.random.randint(len(points))]
-                end_x = end_point[0]
-                end_y = end_point[1]
+                end_x = center_x + np.random.randint((-r, r))
+                end_y = center_y + np.random.randint((-r, r))
 
                 brush_w = 5 + np.random.randint(max_width)
 
