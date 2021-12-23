@@ -54,7 +54,7 @@ def load_model(config_path, device):
 
     origin_forward = model.forward
     model.forward = partial(model.forward, img_metas={}, return_loss=False)
-    classes = cfg['data']['train']['classes']
+    classes = [x for x in cfg['data']['train']['classes'] if x != '正常']
     return model, classes
 
 
