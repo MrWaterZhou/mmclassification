@@ -221,8 +221,8 @@ class Saver(Thread):
         for contour in contours:
             center, r = cv2.minEnclosingCircle(contour)
             r = int(r)
-            center_x = int(center[0])
-            center_y = int(center[1])
+            center_x = int(center[1])
+            center_y = int(center[0])
             print(r)
 
             times_k = max(3,np.random.randint(times))
