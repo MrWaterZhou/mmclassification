@@ -223,6 +223,7 @@ class Saver(Thread):
             r = int(r)
             center_x = int(center[0])
             center_y = int(center[1])
+            print(r)
 
             times_k = np.random.randint(times)
             for i in range(times_k):
