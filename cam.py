@@ -205,7 +205,7 @@ class Saver(Thread):
                        np.random.randint(0, 255, 3).tolist(), -1)
         return image
 
-    def random_ff_mask(self, image, grayscale_cam, shape, max_width=5, times=10):
+    def random_ff_mask(self, image, grayscale_cam, shape, times=10):
         """Generate a random free form mask with configuration.
         Args:
             config: Config should have configuration including IMG_SHAPES,
@@ -214,6 +214,7 @@ class Saver(Thread):
             tuple: (top, left, height, width)
         """
         image = image.copy()
+        max_width = min(shape[0],shape[1]) // 20
 
         cam_bin = (grayscale_cam > 0.5).astype(np.uint8)
         contours, _ = cv2.findContours((cam_bin * 255).astype(np.uint8), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
@@ -300,25 +301,25 @@ class Saver(Thread):
                     # 创建文件夹
                     if mosaic is not None:
                         filename = data['image']
-                        save_path = '{}_mosaic_{}_{}.jpg'.format(filename, label, score)
+                        save_path = '{}_mosaic_{}.jpg'.format(filename, label)
                         cv2.imwrite(save_path, mosaic)
                         valid_for_image.append(save_path)
                         del mosaic
 
                     if ff_mask is not None:
                         filename = data['image']
-                        save_path = '{}_ff_mask_{}_{}.jpg'.format(filename, label, score)
+                        save_path = '{}_ff_mask_{}.jpg'.format(filename, label)
                         cv2.imwrite(save_path, ff_mask)
                         valid_for_image.append(save_path)
                         del ff_mask
 
                     if paste is not None:
                         filename = data['image']
-                        save_path = '{}_paste_{}_{}.jpg'.format(filename, label, score)
+                        save_path = '{}_paste_{}.jpg'.format(filename, label)
                         cv2.imwrite(save_path, paste)
                         valid_for_image.append(save_path)
 
-                        save_path = '{}_transparent_{}_{}.jpg'.format(filename, label, score)
+                        save_path = '{}_transparent_{}.jpg'.format(filename, label)
                         cv2.imwrite(save_path, (0.4 * paste + 0.6 * image).astype(np.uint8))
                         valid_for_image.append(save_path)
                         del paste
