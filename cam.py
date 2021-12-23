@@ -215,28 +215,24 @@ class Saver(Thread):
         """
         image = image.copy()
         max_width = min(shape[0],shape[1]) // 20
+        points = np.where(grayscale_cam)
+        points_length = len(points[0])
 
-        cam_bin = (grayscale_cam > 0.5).astype(np.uint8)
-        contours, _ = cv2.findContours((cam_bin * 255).astype(np.uint8), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 
-        for contour in contours:
-            center, r = cv2.minEnclosingCircle(contour)
-            r = int(r)
-            center_x = int(center[1])
-            center_y = int(center[0])
-            print(r)
 
-            times_k = max(3,np.random.randint(times))
-            for i in range(times_k):
-                start_x = int(center_x + np.random.uniform(-r, r))
-                start_y = int(center_y + np.random.uniform(-r, r))
+        times_k = max(3,np.random.randint(times))
+        for i in range(times_k):
+            start_idx = np.random.randint(points_length)
+            end_idx = np.random.randint(points_length)
+            start_x = points[0][start_idx]
+            start_y = points[1][start_idx]
 
-                end_x = int(center_x + np.random.uniform(-r, r))
-                end_y = int(center_y + np.random.uniform(-r, r))
+            end_x = points[0][end_idx]
+            end_y = points[1][end_idx]
 
-                brush_w = 5 + np.random.randint(max_width)
+            brush_w = 5 + np.random.randint(max_width)
 
-                cv2.line(image, (start_y, start_x), (end_y, end_x), np.random.randint(0, 255, 3).tolist(), brush_w)
+            cv2.line(image, (start_y, start_x), (end_y, end_x), np.random.randint(0, 255, 3).tolist(), brush_w)
 
         return image
 
