@@ -205,7 +205,7 @@ class Saver(Thread):
                        np.random.randint(0, 255, 3).tolist(), -1)
         return image
 
-    def random_ff_mask(self, image, grayscale_cam, shape, max_width=10, times=3):
+    def random_ff_mask(self, image, grayscale_cam, shape, max_width=10, times=10):
         """Generate a random free form mask with configuration.
         Args:
             config: Config should have configuration including IMG_SHAPES,
