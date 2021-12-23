@@ -214,21 +214,21 @@ class Saver(Thread):
             tuple: (top, left, height, width)
         """
         image = image.copy()
-        max_width = min(shape[0],shape[1]) // 20
+        max_width = min(shape[0], shape[1]) // 20
         points = np.where(grayscale_cam > 0.5)
         points_length = len(points[0])
 
-
-
-        times_k = max(3,np.random.randint(times))
+        end_points = np.where((grayscale_cam < 0.4) * (grayscale_cam > 0.3))
+        end_points_length = len(end_points[0])
+        times_k = max(3, np.random.randint(times))
         for i in range(times_k):
             start_idx = np.random.randint(points_length)
-            end_idx = np.random.randint(points_length)
+            end_idx = np.random.randint(end_points_length)
             start_x = points[0][start_idx]
             start_y = points[1][start_idx]
 
-            end_x = points[0][end_idx]
-            end_y = points[1][end_idx]
+            end_x = end_points[0][end_idx]
+            end_y = end_points[1][end_idx]
 
             brush_w = 5 + np.random.randint(max_width)
 
