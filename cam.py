@@ -227,11 +227,11 @@ class Saver(Thread):
 
             times_k = np.random.randint(times)
             for i in range(times_k):
-                start_x = center_x + np.random.randint((-r, r))
-                start_y = center_y + np.random.randint((-r, r))
+                start_x = int(center_x + np.random.uniform(-r, r))
+                start_y = int(center_y + np.random.uniform(-r, r))
 
-                end_x = center_x + np.random.randint((-r, r))
-                end_y = center_y + np.random.randint((-r, r))
+                end_x = int(center_x + np.random.uniform(-r, r))
+                end_y = int(center_y + np.random.uniform(-r, r))
 
                 brush_w = 5 + np.random.randint(max_width)
 
