@@ -54,7 +54,7 @@ def load_model(config_path, device):
 
     origin_forward = model.forward
     model.forward = partial(model.forward, img_metas={}, return_loss=False)
-    classes = cfg['data']['train']['classes']
+    classes = [x for x in cfg['data']['train']['classes'] if x != '正常']
     return model, classes
 
 
@@ -205,6 +205,37 @@ class Saver(Thread):
                        np.random.randint(0, 255, 3).tolist(), -1)
         return image
 
+    def random_ff_mask(self, image, grayscale_cam, shape, times=10):
+        """Generate a random free form mask with configuration.
+        Args:
+            config: Config should have configuration including IMG_SHAPES,
+                VERTICAL_MARGIN, HEIGHT, HORIZONTAL_MARGIN, WIDTH.
+        Returns:
+            tuple: (top, left, height, width)
+        """
+        image = image.copy()
+        max_width = min(shape[0], shape[1]) // 20
+        points = np.where(grayscale_cam > 0.5)
+        points_length = len(points[0])
+
+        end_points = np.where((grayscale_cam < 0.4) * (grayscale_cam > 0.3))
+        end_points_length = len(end_points[0])
+        times_k = max(3, np.random.randint(times))
+        for i in range(times_k):
+            start_idx = np.random.randint(points_length)
+            end_idx = np.random.randint(end_points_length)
+            start_x = points[0][start_idx]
+            start_y = points[1][start_idx]
+
+            end_x = end_points[0][end_idx]
+            end_y = end_points[1][end_idx]
+
+            brush_w = 5 + np.random.randint(max_width)
+
+            cv2.line(image, (start_y, start_x), (end_y, end_x), np.random.randint(0, 255, 3).tolist(), brush_w)
+
+        return image
+
     def do_mosaic(self, image, grayscale_cam, shape):
         """
         马赛克的实现原理是把图像上某个像素点一定范围邻域内的所有点用邻域内左上像素点的颜色代替，这样可以模糊细节，但是可以保留大体的轮廓。
@@ -261,22 +292,30 @@ class Saver(Thread):
 
                     mosaic = self.do_mosaic(image, grayscale_cam, shape)
                     paste = self.paste_color_block(image, grayscale_cam, shape)
+                    ff_mask = self.random_ff_mask(image, grayscale_cam, shape)
 
                     # 创建文件夹
                     if mosaic is not None:
                         filename = data['image']
-                        save_path = '{}_mosaic_{}_{}.jpg'.format(filename, label, score)
+                        save_path = '{}_mosaic_{}.jpg'.format(filename, label)
                         cv2.imwrite(save_path, mosaic)
                         valid_for_image.append(save_path)
                         del mosaic
 
+                    if ff_mask is not None:
+                        filename = data['image']
+                        save_path = '{}_ff_mask_{}.jpg'.format(filename, label)
+                        cv2.imwrite(save_path, ff_mask)
+                        valid_for_image.append(save_path)
+                        del ff_mask
+
                     if paste is not None:
                         filename = data['image']
-                        save_path = '{}_paste_{}_{}.jpg'.format(filename, label, score)
+                        save_path = '{}_paste_{}.jpg'.format(filename, label)
                         cv2.imwrite(save_path, paste)
                         valid_for_image.append(save_path)
 
-                        save_path = '{}_transparent_{}_{}.jpg'.format(filename, label, score)
+                        save_path = '{}_transparent_{}.jpg'.format(filename, label)
                         cv2.imwrite(save_path, (0.4 * paste + 0.6 * image).astype(np.uint8))
                         valid_for_image.append(save_path)
                         del paste
