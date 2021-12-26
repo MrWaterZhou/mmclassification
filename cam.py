@@ -260,7 +260,7 @@ class Saver(Thread):
         end_x = end_points[0][end_idx]
         end_y = end_points[1][end_idx]
         brush_w = int(1 + np.random.randint(max_width))
-        color = np.random.randint(0, 255, 3).tolist(),
+        color = np.random.randint(0, 255, 3).tolist()
         for i in range(times_k):
             if (start_y + i * brush_w < shape[1]) and (end_y + i * brush_w < shape[1]):
                 cv2.line(image, (start_y + i * brush_w, start_x), (end_y + i * brush_w, end_x), color, brush_w)
