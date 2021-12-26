@@ -346,7 +346,7 @@ class Saver(Thread):
                         save_path = '{}_ff_mask_v2_{}.jpg'.format(filename, label)
                         cv2.imwrite(save_path, ff_mask_v2)
                         valid_for_image.append(save_path)
-                        del ff_mask
+                        del ff_mask_v2
 
                     if paste is not None:
                         filename = data['image']
