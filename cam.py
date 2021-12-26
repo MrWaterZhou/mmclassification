@@ -323,7 +323,7 @@ class Saver(Thread):
                     mosaic = self.do_mosaic(image, grayscale_cam, shape)
                     paste = self.paste_color_block(image, grayscale_cam, shape)
                     ff_mask = self.random_ff_mask(image, grayscale_cam, shape)
-
+                    ff_mask_v2 = self.random_ff_mask_v2(image, grayscale_cam, shape)
                     # 创建文件夹
                     if mosaic is not None:
                         filename = data['image']
@@ -336,6 +336,13 @@ class Saver(Thread):
                         filename = data['image']
                         save_path = '{}_ff_mask_{}.jpg'.format(filename, label)
                         cv2.imwrite(save_path, ff_mask)
+                        valid_for_image.append(save_path)
+                        del ff_mask
+
+                    if ff_mask_v2 is not None:
+                        filename = data['image']
+                        save_path = '{}_ff_mask_v2_{}.jpg'.format(filename, label)
+                        cv2.imwrite(save_path, ff_mask_v2)
                         valid_for_image.append(save_path)
                         del ff_mask
 
