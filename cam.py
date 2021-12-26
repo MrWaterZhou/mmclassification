@@ -12,6 +12,7 @@ from queue import Queue
 from typing import Tuple, List
 import json
 from pytorch_grad_cam.utils.image import show_cam_on_image
+import traceback
 
 
 def parse_args():
@@ -362,7 +363,7 @@ class Saver(Thread):
                     filename = data['image']
                     self.result_queue.put(json.dumps({filename: valid_for_image}, ensure_ascii=False) + '\n')
             except Exception as e:
-                print(e)
+                traceback.print_exc()
 
 
 class Logger(Thread):
