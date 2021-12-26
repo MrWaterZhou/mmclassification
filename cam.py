@@ -230,7 +230,7 @@ class Saver(Thread):
             end_x = end_points[0][end_idx]
             end_y = end_points[1][end_idx]
 
-            brush_w = 5 + np.random.randint(max_width)
+            brush_w = np.random.randint(max_width)
 
             cv2.line(image, (start_y, start_x), (end_y, end_x), np.random.randint(0, 255, 3).tolist(), brush_w)
 
