@@ -263,10 +263,10 @@ class Saver(Thread):
         color = np.random.randint(0, 255, 3).tolist()
         for i in range(times):
             # if (start_y + i * brush_w < shape[1]) and (end_y + i * brush_w < shape[1]):
-            cv2.line(image, (start_y + 2 * i * brush_w, start_x + 2 * i * brush_w),
-                     (end_y + 2 * i * brush_w, end_x + 2 * i * brush_w), color, brush_w)
-            cv2.line(image, (start_y - 2 * i * brush_w, start_x - 2 * i * brush_w),
-                     (end_y - 2 * i * brush_w, end_x - 2 * i * brush_w), color, brush_w)
+            cv2.line(image, (start_y + 4 * i * brush_w, start_x + 4 * i * brush_w),
+                     (end_y + 4 * i * brush_w, end_x + 4 * i * brush_w), color, brush_w)
+            cv2.line(image, (start_y - 4 * i * brush_w, start_x - 4 * i * brush_w),
+                     (end_y - 4 * i * brush_w, end_x - 4 * i * brush_w), color, brush_w)
         return image
 
     def do_mosaic(self, image, grayscale_cam, shape):
