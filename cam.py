@@ -253,7 +253,6 @@ class Saver(Thread):
         end_points = np.where((grayscale_cam < 0.4) * (grayscale_cam > 0.3))
         end_points_length = len(end_points[0])
 
-
         start_idx = np.random.randint(points_length)
         end_idx = np.random.randint(end_points_length)
         start_x = points[0][start_idx]
@@ -264,8 +263,10 @@ class Saver(Thread):
         color = np.random.randint(0, 255, 3).tolist()
         for i in range(times):
             # if (start_y + i * brush_w < shape[1]) and (end_y + i * brush_w < shape[1]):
-            cv2.line(image, (start_y + 4 * i * brush_w, 0), (end_y + 4 * i * brush_w, 0), color, brush_w)
-            cv2.line(image, (start_y - 4 * i * brush_w, 0), (end_y - 4 * i * brush_w, 0), color, brush_w)
+            cv2.line(image, (start_y + 2 * i * brush_w, start_x + 2 * i * brush_w),
+                     (end_y + 2 * i * brush_w, end_x + 2 * i * brush_w), color, brush_w)
+            cv2.line(image, (start_y - 2 * i * brush_w, start_x - 2 * i * brush_w),
+                     (end_y - 2 * i * brush_w, end_x - 2 * i * brush_w), color, brush_w)
         return image
 
     def do_mosaic(self, image, grayscale_cam, shape):
