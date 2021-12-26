@@ -236,6 +236,36 @@ class Saver(Thread):
 
         return image
 
+    def random_ff_mask_v2(self, image, grayscale_cam, shape, times=20):
+        """Generate a random free form mask with configuration.
+        Args:
+            config: Config should have configuration including IMG_SHAPES,
+                VERTICAL_MARGIN, HEIGHT, HORIZONTAL_MARGIN, WIDTH.
+        Returns:
+            tuple: (top, left, height, width)
+        """
+        image = image.copy()
+        max_width = min(shape[0], shape[1]) // 20
+        points = np.where(grayscale_cam > 0.5)
+        points_length = len(points[0])
+
+        end_points = np.where((grayscale_cam < 0.4) * (grayscale_cam > 0.3))
+        end_points_length = len(end_points[0])
+        times_k = max(3, np.random.randint(times))
+
+        start_idx = np.random.randint(points_length)
+        end_idx = np.random.randint(end_points_length)
+        start_x = points[0][start_idx]
+        start_y = points[1][start_idx]
+        end_x = end_points[0][end_idx]
+        end_y = end_points[1][end_idx]
+        brush_w = int(1 + np.random.randint(max_width))
+        color = np.random.randint(0, 255, 3).tolist(),
+        for i in range(times_k):
+            cv2.line(image, (start_y + i * brush_w, start_x), (end_y + i * brush_w, end_x), color, brush_w)
+
+        return image
+
     def do_mosaic(self, image, grayscale_cam, shape):
         """
         马赛克的实现原理是把图像上某个像素点一定范围邻域内的所有点用邻域内左上像素点的颜色代替，这样可以模糊细节，但是可以保留大体的轮廓。
