@@ -6,20 +6,19 @@ fp16 = dict(loss_scale='dynamic')
 dataset_type = 'PornJson'
 
 # model settings
+
 model = dict(
     type='ImageClassifier',
-    backbone=dict(type='RegNet', arch='regnetx_4.0gf'),
+    backbone=dict(
+        type='SwinTransformer', arch='tiny', img_size=224, drop_path_rate=0.2),
     neck=dict(type='GlobalAveragePooling'),
     head=dict(
         type='MultiLabelLinearClsHead',
         num_classes=9,
-        in_channels=1360,
+        in_channels=768,
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0, use_sigmoid=True),
-    ),
-    # train_cfg=dict(augments=[
-    #     dict(type='BatchMixup', alpha=0.8, num_classes=3, prob=0.5),
-    # ])
-)
+        ))
+
 
 img_norm_cfg = dict(
     # The mean and std are used in PyCls when training RegNets
@@ -158,7 +157,7 @@ data = dict(
         classes=['性感_胸部', '色情_女胸', '色情_男下体', '色情_口交', '性感_内衣裤', '性感_男性胸部', '色情_裸露下体', '性感_腿部特写','正常'],
         ann_file='/home/zhou/projects/mmclassification/data/porn/exp_1211/eval.txt',
         pipeline=test_pipeline))
-load_from = 'https://download.openmmlab.com/mmclassification/v0/regnet/convert/RegNetX-4.0GF-ef8bb32c.pth'
+# load_from = 'https://download.openmmlab.com/mmclassification/v0/regnet/convert/RegNetX-4.0GF-ef8bb32c.pth'
 evaluation = dict(interval=5, metric=['mAP', 'CP', 'CR', 'CF1', 'OP', 'OR', 'OF1'],labels=['性感_胸部', '色情_女胸', '色情_男下体', '色情_口交', '性感_内衣裤', '性感_男性胸部', '色情_裸露下体', '性感_腿部特写', '正常'])
 
 # optimizer
@@ -166,4 +165,4 @@ optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=None)
 # learning policy
 lr_config = dict(policy='step', step=[30, 60, 90, 120, 150, 180])
-runner = dict(type='EpochBasedRunner', max_epochs=200)
+runner = dict(type='EpochBasedRunner', max_epochs=300)
