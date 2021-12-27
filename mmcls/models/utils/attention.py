@@ -235,10 +235,12 @@ class ShiftWindowMSA(BaseModule):
 
         # cyclic shift
         if self.shift_size > 0:
-            shifted_query = torch.roll(
-                query,
-                shifts=(-self.shift_size, -self.shift_size),
-                dims=(1, 2))
+            # shifted_query = torch.roll(
+            #     query,
+            #     shifts=(-self.shift_size, -self.shift_size),
+            #     dims=(1, 2))
+            shifted_query = torch.cat((query[:, -self.shift_size:, :, :], query[:, :-self.shift_size, :, :]), dim=1)
+            shifted_query = torch.cat((shifted_query[:, :, -self.shift_size:, :], shifted_query[:, :, :-self.shift_size, :]), dim=2)
         else:
             shifted_query = query
 
@@ -258,10 +260,12 @@ class ShiftWindowMSA(BaseModule):
         shifted_x = self.window_reverse(attn_windows, self.H_pad, self.W_pad)
         # reverse cyclic shift
         if self.shift_size > 0:
-            x = torch.roll(
-                shifted_x,
-                shifts=(self.shift_size, self.shift_size),
-                dims=(1, 2))
+            # x = torch.roll(
+            #     shifted_x,
+            #     shifts=(self.shift_size, self.shift_size),
+            #     dims=(1, 2))
+            x = torch.cat((shifted_x[:, self.shift_size:, :, :], shifted_x[:, :self.shift_size, :, :]), dim=1)
+            x = torch.cat((x[:, :, self.shift_size:, :], x[:, :, :self.shift_size, :]), dim=2)
         else:
             x = shifted_x
 
