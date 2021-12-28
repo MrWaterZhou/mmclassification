@@ -153,30 +153,56 @@ def pytorch2onnx(model,
         image = np.expand_dims(image, 0)
         image = (image - mean) / std
         image = np.transpose(image, (0, 3, 1, 2))
-        for batch in range(1, 5):
-            images = np.concatenate([image] * batch, 0)
-            imgs = torch.tensor(images.astype(np.float32))
-            img_list = [imgs]
+        if dynamic_axes:
+            for batch in range(1, 5):
+                images = np.concatenate([image] * batch, 0)
+                imgs = torch.tensor(images.astype(np.float32))
+                img_list = [imgs]
 
-            # check the numerical value
-            # get pytorch output
-            print(img_list[0].shape)
-            pytorch_result = model(img_list, img_metas={}, return_loss=False)
+                # check the numerical value
+                # get pytorch output
+                print(img_list[0].shape)
+                pytorch_result = model(img_list, img_metas={}, return_loss=False)
 
-            # get onnx output
-            input_all = [node.name for node in onnx_model.graph.input]
-            input_initializer = [
-                node.name for node in onnx_model.graph.initializer
-            ]
-            net_feed_input = list(set(input_all) - set(input_initializer))
-            assert (len(net_feed_input) == 1)
-            sess = rt.InferenceSession(output_file)
-            onnx_result = sess.run(
-                None, {net_feed_input[0]: img_list[0].detach().numpy()})[0]
+                # get onnx output
+                input_all = [node.name for node in onnx_model.graph.input]
+                input_initializer = [
+                    node.name for node in onnx_model.graph.initializer
+                ]
+                net_feed_input = list(set(input_all) - set(input_initializer))
+                assert (len(net_feed_input) == 1)
+                sess = rt.InferenceSession(output_file)
+                onnx_result = sess.run(
+                    None, {net_feed_input[0]: img_list[0].detach().numpy()})[0]
 
-            z.append(onnx_result[0])
-        for zz in z:
-            print(zz)
+                z.append(onnx_result[0])
+            for zz in z:
+                print(zz)
+        else:
+            for batch in range(1, 2):
+                images = np.concatenate([image] * batch, 0)
+                imgs = torch.tensor(images.astype(np.float32))
+                img_list = [imgs]
+
+                # check the numerical value
+                # get pytorch output
+                print(img_list[0].shape)
+                pytorch_result = model(img_list, img_metas={}, return_loss=False)
+
+                # get onnx output
+                input_all = [node.name for node in onnx_model.graph.input]
+                input_initializer = [
+                    node.name for node in onnx_model.graph.initializer
+                ]
+                net_feed_input = list(set(input_all) - set(input_initializer))
+                assert (len(net_feed_input) == 1)
+                sess = rt.InferenceSession(output_file)
+                onnx_result = sess.run(
+                    None, {net_feed_input[0]: img_list[0].detach().numpy()})[0]
+
+                z.append(onnx_result[0])
+            for zz in z:
+                print(zz)
 
 
 def parse_args():
