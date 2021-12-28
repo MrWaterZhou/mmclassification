@@ -8,7 +8,7 @@ import onnxruntime as rt
 import torch
 from mmcv.onnx import register_extra_symbolics
 from mmcv.runner import load_checkpoint
-
+import cv2
 from mmcls.models import build_classifier
 
 torch.manual_seed(3)
@@ -145,8 +145,17 @@ def pytorch2onnx(model,
 
         # test the dynamic model
         z = []
+        image = cv2.imread(
+            '/home/zhou/dataset/subimages/3b55e030-f440-11eb-91bf-ac1f6b9545ae_1627984227.55004050_0.jpg')
+        mean = np.array([123.675, 116.28, 103.53])
+        std = np.array([58.395, 57.12, 57.375])
+        image = cv2.resize(image, (224, 224))
+        image = np.expand_dims(image, 0)
+        image = (image - mean) / std
+
         for batch in range(1, 5):
-            imgs = torch.tensor(np.random.uniform(0, 1, (batch, 3, 224, 224)).astype(np.float32))
+            images = np.concatenate([image] * batch, 0)
+            imgs = torch.tensor(images.astype(np.float32))
             img_list = [imgs]
 
             # check the numerical value
@@ -168,7 +177,6 @@ def pytorch2onnx(model,
             z.append(pytorch_result[0] - onnx_result[0])
         for zz in z:
             print(zz)
-
 
 
 def parse_args():
