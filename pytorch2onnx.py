@@ -144,6 +144,7 @@ def pytorch2onnx(model,
         onnx.checker.check_model(onnx_model)
 
         # test the dynamic model
+        z = []
         for batch in range(1, 5):
             imgs = torch.tensor(np.random.uniform(0, 1, (batch, 3, 224, 224)).astype(np.float32))
             img_list = [imgs]
@@ -163,8 +164,10 @@ def pytorch2onnx(model,
             sess = rt.InferenceSession(output_file)
             onnx_result = sess.run(
                 None, {net_feed_input[0]: img_list[0].detach().numpy()})[0]
-            if not np.allclose(pytorch_result, onnx_result):
-                print(pytorch_result[0] - onnx_result[0])
+
+            z.append(pytorch_result[0] - onnx_result[0])
+        for zz in z:
+            print(zz)
 
 
 
