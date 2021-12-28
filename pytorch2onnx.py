@@ -152,7 +152,7 @@ def pytorch2onnx(model,
         image = cv2.resize(image, (224, 224))
         image = np.expand_dims(image, 0)
         image = (image - mean) / std
-
+        image = np.transpose(image, (0, 3, 1, 2))
         for batch in range(1, 5):
             images = np.concatenate([image] * batch, 0)
             imgs = torch.tensor(images.astype(np.float32))
