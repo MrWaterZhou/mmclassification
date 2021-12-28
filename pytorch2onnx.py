@@ -83,8 +83,8 @@ def pytorch2onnx(model,
         dynamic_axes = {
             'input': {
                 0: 'batch',
-                2: 'width',
-                3: 'height'
+                #2: 'width',
+                #3: 'height'
             },
             'probs': {
                 0: 'batch'
@@ -118,8 +118,8 @@ def pytorch2onnx(model,
         ), f'Requires to install onnx-simplify>={min_required_version}'
 
         if dynamic_axes:
-            input_shape = (input_shape[0], input_shape[1], input_shape[2] * 2,
-                           input_shape[3] * 2)
+            input_shape = (input_shape[0], input_shape[1], input_shape[2],
+                           input_shape[3])
         else:
             input_shape = (input_shape[0], input_shape[1], input_shape[2],
                            input_shape[3])
@@ -146,14 +146,16 @@ def pytorch2onnx(model,
         # test the dynamic model
         if dynamic_export:
             dynamic_test_inputs = _demo_mm_inputs(
-                (input_shape[0], input_shape[1], input_shape[2] * 2,
-                 input_shape[3] * 2), model.head.num_classes)
+                (1, input_shape[1], input_shape[2],
+                 input_shape[3]), model.head.num_classes)
             imgs = dynamic_test_inputs.pop('imgs')
-            img_list = [img[None, :] for img in imgs]
+            imgs = torch.tensor(np.random.uniform(0,1,(1,3,224,224)).astype(np.float32))
+            img_list = [imgs]
 
         # check the numerical value
         # get pytorch output
-        pytorch_result = model(img_list, img_metas={}, return_loss=False)[0]
+        print(img_list[0].shape)
+        pytorch_result = model(img_list, img_metas={}, return_loss=False)
 
         # get onnx output
         input_all = [node.name for node in onnx_model.graph.input]
@@ -166,8 +168,11 @@ def pytorch2onnx(model,
         onnx_result = sess.run(
             None, {net_feed_input[0]: img_list[0].detach().numpy()})[0]
         if not np.allclose(pytorch_result, onnx_result):
+            print(pytorch_result)
+            print(onnx_result)
             raise ValueError(
                 'The outputs are different between Pytorch and ONNX')
+
         print('The outputs are same between Pytorch and ONNX')
 
 
