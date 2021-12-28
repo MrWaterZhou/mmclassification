@@ -83,8 +83,8 @@ def pytorch2onnx(model,
         dynamic_axes = {
             'input': {
                 0: 'batch',
-                #2: 'width',
-                #3: 'height'
+                # 2: 'width',
+                # 3: 'height'
             },
             'probs': {
                 0: 'batch'
@@ -95,7 +95,7 @@ def pytorch2onnx(model,
 
     with torch.no_grad():
         torch.onnx.export(
-            model, (img_list, ),
+            model, (img_list,),
             output_file,
             input_names=['input'],
             output_names=['probs'],
@@ -144,36 +144,28 @@ def pytorch2onnx(model,
         onnx.checker.check_model(onnx_model)
 
         # test the dynamic model
-        if dynamic_export:
-            dynamic_test_inputs = _demo_mm_inputs(
-                (1, input_shape[1], input_shape[2],
-                 input_shape[3]), model.head.num_classes)
-            imgs = dynamic_test_inputs.pop('imgs')
-            imgs = torch.tensor(np.random.uniform(0,1,(1,3,224,224)).astype(np.float32))
+        for batch in range(1, 5):
+            imgs = torch.tensor(np.random.uniform(0, 1, (batch, 3, 224, 224)).astype(np.float32))
             img_list = [imgs]
 
-        # check the numerical value
-        # get pytorch output
-        print(img_list[0].shape)
-        pytorch_result = model(img_list, img_metas={}, return_loss=False)
+            # check the numerical value
+            # get pytorch output
+            print(img_list[0].shape)
+            pytorch_result = model(img_list, img_metas={}, return_loss=False)
 
-        # get onnx output
-        input_all = [node.name for node in onnx_model.graph.input]
-        input_initializer = [
-            node.name for node in onnx_model.graph.initializer
-        ]
-        net_feed_input = list(set(input_all) - set(input_initializer))
-        assert (len(net_feed_input) == 1)
-        sess = rt.InferenceSession(output_file)
-        onnx_result = sess.run(
-            None, {net_feed_input[0]: img_list[0].detach().numpy()})[0]
-        if not np.allclose(pytorch_result, onnx_result):
-            print(pytorch_result)
-            print(onnx_result)
-            raise ValueError(
-                'The outputs are different between Pytorch and ONNX')
+            # get onnx output
+            input_all = [node.name for node in onnx_model.graph.input]
+            input_initializer = [
+                node.name for node in onnx_model.graph.initializer
+            ]
+            net_feed_input = list(set(input_all) - set(input_initializer))
+            assert (len(net_feed_input) == 1)
+            sess = rt.InferenceSession(output_file)
+            onnx_result = sess.run(
+                None, {net_feed_input[0]: img_list[0].detach().numpy()})[0]
+            if not np.allclose(pytorch_result, onnx_result):
+                print(pytorch_result[0] - onnx_result[0])
 
-        print('The outputs are same between Pytorch and ONNX')
 
 
 def parse_args():
@@ -211,9 +203,9 @@ if __name__ == '__main__':
         input_shape = (1, 3, args.shape[0], args.shape[0])
     elif len(args.shape) == 2:
         input_shape = (
-            1,
-            3,
-        ) + tuple(args.shape)
+                          1,
+                          3,
+                      ) + tuple(args.shape)
     else:
         raise ValueError('invalid input shape')
 
