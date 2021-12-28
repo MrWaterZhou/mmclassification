@@ -174,7 +174,7 @@ def pytorch2onnx(model,
             onnx_result = sess.run(
                 None, {net_feed_input[0]: img_list[0].detach().numpy()})[0]
 
-            z.append(pytorch_result[0] - onnx_result[0])
+            z.append(onnx_result[0])
         for zz in z:
             print(zz)
 
