@@ -162,7 +162,7 @@ class RandomResizedCrop(object):
         crop_padding (int): The crop padding parameter in efficientnet style
             center crop. Only valid if efficientnet_style is true.
             Defaults to 32.
-        interpolation (str): Interpolation method, accepted values are
+        interpolation (List): Interpolation method, accepted values are
             'nearest', 'bilinear', 'bicubic', 'area', 'lanczos'. Defaults to
             'bilinear'.
         backend (str): The image resize backend type, accepted values are
@@ -171,7 +171,7 @@ class RandomResizedCrop(object):
 
     def __init__(self,
                  size,
-                 scale=(0.08, 1.0),
+                 scale=(0.7, 1.0),
                  ratio=(3. / 4., 4. / 3.),
                  max_attempts=10,
                  efficientnet_style=False,
@@ -194,8 +194,6 @@ class RandomResizedCrop(object):
         assert min_covered >= 0, 'min_covered should be no less than 0.'
         assert isinstance(max_attempts, int) and max_attempts >= 0, \
             'max_attempts mush be int and no less than 0.'
-        assert interpolation in ('nearest', 'bilinear', 'bicubic', 'area',
-                                 'lanczos')
         if backend not in ['cv2', 'pillow']:
             raise ValueError(f'backend: {backend} is not supported for resize.'
                              'Supported backends are "cv2", "pillow"')
@@ -206,7 +204,7 @@ class RandomResizedCrop(object):
         self.efficientnet_style = efficientnet_style
         self.min_covered = min_covered
         self.crop_padding = crop_padding
-        self.interpolation = interpolation
+        self.interpolation = ['nearest', 'bilinear', 'bicubic', 'area', 'lanczos']
         self.backend = backend
 
     @staticmethod
@@ -366,10 +364,11 @@ class RandomResizedCrop(object):
                     max_attempts=self.max_attempts)
             ymin, xmin, ymax, xmax = get_params_func(**get_params_args)
             img = mmcv.imcrop(img, bboxes=np.array([xmin, ymin, xmax, ymax]))
+            interpolation = random.choice(self.interpolation)
             results[key] = mmcv.imresize(
                 img,
                 tuple(self.size[::-1]),
-                interpolation=self.interpolation,
+                interpolation=interpolation,
                 backend=self.backend)
         return results
 
@@ -381,7 +380,6 @@ class RandomResizedCrop(object):
         repr_str += f', efficientnet_style={self.efficientnet_style}'
         repr_str += f', min_covered={self.min_covered}'
         repr_str += f', crop_padding={self.crop_padding}'
-        repr_str += f', interpolation={self.interpolation}'
         repr_str += f', backend={self.backend})'
         return repr_str
 
