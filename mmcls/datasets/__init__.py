@@ -12,11 +12,12 @@ from .samplers import DistributedSampler
 from .voc import VOC
 from .porn import Porn
 from .porn_json import PornJson
+from .json_dataset import JsonDataset
 
 __all__ = [
     'BaseDataset', 'ImageNet', 'CIFAR10', 'CIFAR100', 'MNIST', 'FashionMNIST',
     'VOC', 'MultiLabelDataset', 'build_dataloader', 'build_dataset',
     'DistributedSampler', 'ConcatDataset', 'RepeatDataset',
     'ClassBalancedDataset', 'DATASETS', 'PIPELINES', 'ImageNet21k',
-    'PornJson', 'Porn'
+    'PornJson', 'Porn', 'JsonDataset'
 ]
