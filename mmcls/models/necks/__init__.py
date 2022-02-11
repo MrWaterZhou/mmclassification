@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .gap import GlobalAveragePooling, GlobalMaxPooling
 
-__all__ = ['GlobalAveragePooling', 'GlobalMaxPooling']
+from .gap import GlobalAveragePooling
+from .hr_fuse import HRFuseScales
+
+__all__ = ['GlobalAveragePooling', 'HRFuseScales']
