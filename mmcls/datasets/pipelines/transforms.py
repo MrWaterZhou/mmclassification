@@ -686,7 +686,7 @@ class RandomPad(object):
             h, w = shape[0], shape[1]
             h_new = int(h * np.random.uniform(1, 1 + self.size_expand_ratio))
             w_new = int(w * np.random.uniform(1, 1 + self.size_expand_ratio))
-            img_new = np.random.uniform(0, img.max(), (h_new, w_new, shape[2])).astype(img.type)
+            img_new = np.random.uniform(0, img.max(), (h_new, w_new, shape[2])).astype(img.dtype)
             h_start = np.random.randint(0, h_new - h) if h_new > h else 0
             w_start = np.random.randint(0, w_new - w) if w_new > w else 0
             img_new[h_start:h_start + h, w_start:w_start + h, :] = img
