@@ -174,3 +174,5 @@ lr_config = dict(
     warmup_iters=2000,
     warmup_ratio=1e-4)
 runner = dict(type='IterBasedRunner', max_iters=395 * 200)
+checkpoint_config = dict(interval=2000)
+
