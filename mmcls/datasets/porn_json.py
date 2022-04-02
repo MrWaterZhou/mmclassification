@@ -115,7 +115,9 @@ class PornJson(MultiLabelDataset):
             info = {'img_prefix': self.data_prefix}
             info['img_info'] = {'filename': sample['image'],
                                 'choices': local_aug[sample['image']] if sample['image'] in local_aug else []}
-            gt_label = [sample[x] for x in self.CLASSES]
+            gt_label = [sample[x] for x in self.CLASSES if x != '正常']
+            if '正常' in self.CLASSES:
+                gt_label.append(0) if sum(gt_label) > 0 else gt_label.append(1)
             if len(gt_label) == 1:
                 gt_label = gt_label[0]
             info['gt_label'] = np.array(gt_label, dtype=np.int64)
