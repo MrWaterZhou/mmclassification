@@ -663,6 +663,45 @@ class Pad(object):
 
 
 @PIPELINES.register_module()
+class RandomPad(object):
+    """Pad images.
+
+    Args:
+        size (tuple[int] | None): Expected padding size (h, w). Conflicts with
+                pad_to_square. Defaults to None.
+        pad_to_square (bool): Pad any image to square shape. Defaults to False.
+        pad_val (Number | Sequence[Number]): Values to be filled in padding
+            areas when padding_mode is 'constant'. Default to 0.
+        padding_mode (str): Type of padding. Should be: constant, edge,
+            reflect or symmetric. Default to "constant".
+    """
+
+    def __init__(self, size_expand_ratio=0.15):
+        self.size_expand_ratio = size_expand_ratio
+
+    def __call__(self, results):
+        for key in results.get('img_fields', ['img']):
+            img = results[key]
+            shape = img.shape
+            h, w = shape[0], shape[1]
+            h_new = int(h * np.random.uniform(1, 1 + self.size_expand_ratio))
+            w_new = int(w * np.random.uniform(1, 1 + self.size_expand_ratio))
+            img_new = np.random.uniform(0, img.max(), (h_new, w_new, shape[2])).astype(img.type)
+            h_start = np.random.randint(0, h_new - h) if h_new > h else 0
+            w_start = np.random.randint(0, w_new - w) if w_new > w else 0
+            img_new[h_start:h_start + h, w_start:w_start + h, :] = img
+            results[key] = img_new
+            results['img_shape'] = img_new
+            results['img_shape'] = img_new.shape
+        return results
+
+    def __repr__(self):
+        repr_str = self.__class__.__name__
+        repr_str += f'(size_expand_ratio={self.size_expand_ratio}, '
+        return repr_str
+
+
+@PIPELINES.register_module()
 class RandomResize(object):
     """Reisze the image randomly with different interpolation.
 
