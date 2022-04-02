@@ -9,7 +9,7 @@ from .formatting import (Collect, ImageToTensor, ToNumpy, ToPIL, ToTensor,
 from .loading import LoadImageFromFile, LoadImageFromFileWithLocalAugment
 from .transforms import (CenterCrop, ColorJitter, Lighting, Normalize, Pad,
                          RandomCrop, RandomErasing, RandomFlip,
-                         RandomGrayscale, RandomResizedCrop, Resize, RandomResize, RandomPad)
+                         RandomGrayscale, RandomResizedCrop, Resize, RandomResize, RandomShiftResize)
 
 __all__ = [
     'Compose', 'to_tensor', 'ToTensor', 'ImageToTensor', 'ToPIL', 'ToNumpy',
@@ -20,5 +20,5 @@ __all__ = [
     'Contrast', 'Brightness', 'Sharpness', 'AutoAugment', 'SolarizeAdd',
     'Cutout', 'RandAugment', 'Lighting', 'ColorJitter', 'RandomErasing', 'Pad', 'RandomResize',
     'LoadImageFromFileWithLocalAugment',
-    'RandomPad'
+    'RandomShiftResize'
 ]

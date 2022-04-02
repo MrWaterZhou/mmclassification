@@ -663,7 +663,7 @@ class Pad(object):
 
 
 @PIPELINES.register_module()
-class RandomPad(object):
+class RandomShiftResize(object):
     """Pad images.
 
     Args:
@@ -676,22 +676,24 @@ class RandomPad(object):
             reflect or symmetric. Default to "constant".
     """
 
-    def __init__(self, size_expand_ratio=0.15):
-        self.size_expand_ratio = size_expand_ratio
+    def __init__(self, size: int):
+        self.size = size if isinstance(size, int) else size[0]
+        self.core_sizes = [int(size * x) for x in [0.8, 0.85, 0.9, 0.95, 1]]
+        self.resizers = {x: RandomResize((x, x)) for x in self.core_sizes}
 
     def __call__(self, results):
+        core_size = random.choice(self.core_sizes)
+        results = self.resizers[core_size](results)
+        if core_size == self.size:
+            return results
         for key in results.get('img_fields', ['img']):
             img = results[key]
             shape = img.shape
-            h, w = shape[0], shape[1]
-            h_new = int(h * np.random.uniform(1, 1 + self.size_expand_ratio))
-            w_new = int(w * np.random.uniform(1, 1 + self.size_expand_ratio))
-            img_new = np.random.uniform(0, img.max(), (h_new, w_new, shape[2])).astype(img.dtype)
-            h_start = np.random.randint(0, h_new - h) if h_new > h else 0
-            w_start = np.random.randint(0, w_new - w) if w_new > w else 0
-            img_new[h_start:h_start + h, w_start:w_start + w, :] = img
+            img_new = np.random.uniform(0, img.max(), (self.size, self.size, shape[2])).astype(img.dtype)
+            h_start = np.random.randint(0, self.size - core_size)
+            w_start = np.random.randint(0, self.size - core_size)
+            img_new[h_start:h_start + core_size, w_start:w_start + core_size, :] = img
             results[key] = img_new
-            results['img_shape'] = img_new
             results['img_shape'] = img_new.shape
         return results
 
