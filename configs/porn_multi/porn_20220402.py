@@ -6,27 +6,26 @@ fp16 = dict(loss_scale='dynamic')
 dataset_type = 'PornJson'
 
 # model settings
-
 model = dict(
     type='ImageClassifier',
-    backbone=dict(
-        type='SwinTransformer', arch='tiny', img_size=224, drop_path_rate=0.2),
+    backbone=dict(type='RegNet', arch='regnetx_4.0gf'),
     neck=dict(type='GlobalAveragePooling'),
     head=dict(
         type='MultiLabelLinearClsHead',
         num_classes=9,
-        in_channels=768,
+        in_channels=1360,
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0, use_sigmoid=True),
-    ))
-
-# img_norm_cfg = dict(
-#     # The mean and std are used in PyCls when training RegNets
-#     mean=[103.53, 116.28, 123.675],
-#     std=[57.375, 57.12, 58.395],
-#     to_rgb=False)
+    ),
+    # train_cfg=dict(augments=[
+    #     dict(type='BatchMixup', alpha=0.8, num_classes=3, prob=0.5),
+    # ])
+)
 
 img_norm_cfg = dict(
-    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+    # The mean and std are used in PyCls when training RegNets
+    mean=[103.53, 116.28, 123.675],
+    std=[57.375, 57.12, 58.395],
+    to_rgb=False)
 
 policies = [
     dict(type='AutoContrast'),
@@ -125,14 +124,6 @@ train_pipeline = [
         magnitude_level=9,
         magnitude_std=0.5),
     dict(type='Albu', transforms=transform_after),
-    dict(
-        type='RandomErasing',
-        erase_prob=0.25,
-        mode='rand',
-        min_area_ratio=0.02,
-        max_area_ratio=1 / 3,
-        fill_color=img_norm_cfg['mean'][::-1],
-        fill_std=img_norm_cfg['std'][::-1]),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='ImageToTensor', keys=['img']),
     dict(type='ToTensor', keys=['gt_label']),
@@ -148,7 +139,7 @@ test_pipeline = [
 ]
 
 data = dict(
-    samples_per_gpu=128,
+    samples_per_gpu=256,
     workers_per_gpu=12,
     train=dict(
         type=dataset_type,
@@ -168,44 +159,13 @@ data = dict(
         classes=['性感_胸部', '色情_女胸', '色情_男下体', '色情_口交', '性感_内衣裤', '性感_男性胸部', '色情_裸露下体', '性感_腿部特写', '正常'],
         ann_file='/home/zhou/projects/mmclassification/data/porn/exp_1211/eval.txt',
         pipeline=test_pipeline))
-load_from = 'https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin_tiny_patch4_window7_224-160bb0a5.pth'
+load_from = 'https://download.openmmlab.com/mmclassification/v0/regnet/convert/RegNetX-4.0GF-ef8bb32c.pth'
 evaluation = dict(interval=5, metric=['mAP', 'CP', 'CR', 'CF1', 'OP', 'OR', 'OF1'],
                   labels=['性感_胸部', '色情_女胸', '色情_男下体', '色情_口交', '性感_内衣裤', '性感_男性胸部', '色情_裸露下体', '性感_腿部特写', '正常'])
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.025, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=None)
 # learning policy
-lr_config = dict(policy='step', step=[30, 60, 90])
-runner = dict(type='EpochBasedRunner', max_epochs=300)
-
-# paramwise_cfg = dict(
-#    norm_decay_mult=0.0,
-#    bias_decay_mult=0.0,
-#    custom_keys={
-#        '.absolute_pos_embed': dict(decay_mult=0.0),
-#        '.relative_position_bias_table': dict(decay_mult=0.0)
-#    })
-
-# for batch in each gpu is 128, 8 gpu
-# lr = 5e-4 * 128 * 8 / 512 = 0.001
-# optimizer = dict(
-#    type='AdamW',
-#    lr=5e-4 * 128 * 2 / 512,
-#    weight_decay=0.05,
-#    eps=1e-8,
-#    betas=(0.9, 0.999),
-#    paramwise_cfg=paramwise_cfg)
-# optimizer_config = dict(grad_clip=dict(max_norm=5.0))
-
-# learning policy
-# lr_config = dict(
-#    policy='CosineAnnealing',
-#    by_epoch=False,
-#    min_lr_ratio=1e-2,
-#    warmup='linear',
-#    warmup_ratio=1e-3,
-#    warmup_iters=20 * 700,
-#    warmup_by_epoch=False)
-
-# runner = dict(type='EpochBasedRunner', max_epochs=300)
+lr_config = dict(policy='step', step=[30, 60, 90, 120, 150, 180])
+runner = dict(type='EpochBasedRunner', max_epochs=200)
