@@ -112,9 +112,8 @@ transform_after = [
 
 train_pipeline = [
     dict(type='LoadImageFromFileWithLocalAugment', p=0.5),
-    dict(type='RandomPad', size_expand_ratio=0.15),
     dict(type='Albu', transforms=transforms),
-    dict(type='RandomResize', size=(224, 224)),
+    dict(type='RandomShiftResize', size=(224, 224)),
     dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
     dict(
         type='RandAugment',
