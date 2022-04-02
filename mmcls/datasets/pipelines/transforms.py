@@ -677,8 +677,8 @@ class RandomShiftResize(object):
     """
 
     def __init__(self, size: int):
-        self.size = size if isinstance(size, int) else int(size[0])
-        self.core_sizes = [int(size * x) for x in [0.8, 0.85, 0.9, 0.95, 1]]
+        self.size = size if isinstance(size, int) else size[0]
+        self.core_sizes = [int(self.size * x) for x in [0.8, 0.85, 0.9, 0.95, 1]]
         self.resizers = {x: RandomResize((x, x)) for x in self.core_sizes}
 
     def __call__(self, results):
