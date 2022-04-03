@@ -163,14 +163,17 @@ evaluation = dict(interval=5, metric=['mAP', 'CP', 'CR', 'CF1', 'OP', 'OR', 'OF1
                   labels=['性感_胸部', '色情_女胸', '色情_男下体', '色情_口交', '性感_内衣裤', '性感_男性胸部', '色情_裸露下体', '性感_腿部特写', '正常'])
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.4, momentum=0.9, weight_decay=5e-5)
+optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=None)
 # learning policy
-lr_config = dict(
-    policy='CosineAnnealing',
-    min_lr=0,
-    warmup='linear',
-    warmup_iters=5,
-    warmup_ratio=0.1,
-    warmup_by_epoch=True)
-runner = dict(type='EpochBasedRunner', max_epochs=100)
+lr_config = dict(policy='step', step=[30, 60, 90, 120, 150, 180])
+runner = dict(type='EpochBasedRunner', max_epochs=200)
+
+checkpoint_config = dict(interval=5)
+# yapf:disable
+log_config = dict(
+    interval=10,
+    hooks=[
+        dict(type='TextLoggerHook'),
+        # dict(type='TensorboardLoggerHook')
+    ])
