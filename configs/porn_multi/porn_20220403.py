@@ -163,7 +163,7 @@ evaluation = dict(interval=5, metric=['mAP', 'CP', 'CR', 'CF1', 'OP', 'OR', 'OF1
                   labels=['性感_胸部', '色情_女胸', '色情_男下体', '色情_口交', '性感_内衣裤', '性感_男性胸部', '色情_裸露下体', '性感_腿部特写', '正常'])
 
 # optimizer
-optimizer = dict(type='adam', lr=1e-3, betas=(0.9, 0.999))
+optimizer = dict(type='Adam', lr=1e-3, betas=(0.9, 0.999))
 lr_config = dict(
     policy='CosineAnnealing',
     by_epoch=False,
