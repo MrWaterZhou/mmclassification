@@ -321,7 +321,7 @@ class Runner:
             results = self.model.infer(images)[0]
             r_list = []
             for filename, res in zip(filenames, results):
-                tags = {'image': filename}
+                tags = {'image': filename.strip()}
                 for r, label in zip(res, self.labels):
                     if r > 0.5:
                         tags[label] = 1
