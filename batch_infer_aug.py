@@ -11,6 +11,7 @@ from threading import Thread
 from queue import Queue
 import cv2
 import time
+import json
 
 TRT_LOGGER = trt.Logger(trt.Logger.WARNING)
 
@@ -319,16 +320,17 @@ class Runner:
             images = self.preprocess(images)
             results = self.model.infer(images)[0]
             r_list = []
-            for res in results:
-                tags = []
+            for filename, res in zip(filenames, results):
+                tags = {'image': filename}
                 for r, label in zip(res, self.labels):
                     if r > 0.5:
-                        tags.append(label)
+                        tags[label] = 1
+                    else:
+                        tags[label] = 0
                         # tags.append(str(r))
-                r_list.append(','.join(tags))
-            results = ['{} {}\n'.format(filename.strip(), r) for filename, r in zip(filenames, r_list)]
-            for result in results:
-                self.save_file.write(result)
+                r_list.append(json.dumps(tags,ensure_ascii=False))
+            for result in r_list:
+                self.save_file.write(result + '\n')
         except Exception as e:
             print(e.__str__())
         return 'done'
