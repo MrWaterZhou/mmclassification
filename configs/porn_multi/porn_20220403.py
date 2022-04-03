@@ -164,14 +164,6 @@ evaluation = dict(interval=5, metric=['mAP', 'CP', 'CR', 'CF1', 'OP', 'OR', 'OF1
 
 # optimizer
 optimizer = dict(type='Adam', lr=1e-3, betas=(0.9, 0.999))
-lr_config = dict(
-    policy='CosineAnnealing',
-    by_epoch=False,
-    min_lr_ratio=1e-6,
-    warmup='linear',
-    warmup_ratio=1e-3,
-    warmup_iters=5 * 390,
-    warmup_by_epoch=False)
 # learning policy
 custom_hooks = [
     dict(type='EMAHook', interval=100, priority='HIGH')
