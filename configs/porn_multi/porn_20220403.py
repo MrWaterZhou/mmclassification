@@ -163,7 +163,7 @@ evaluation = dict(interval=5, metric=['mAP', 'CP', 'CR', 'CF1', 'OP', 'OR', 'OF1
                   labels=['性感_胸部', '色情_女胸', '色情_男下体', '色情_口交', '性感_内衣裤', '性感_男性胸部', '色情_裸露下体', '性感_腿部特写', '正常'])
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001, nesterov=True)
 optimizer_config = dict(grad_clip=None)
 # learning policy
 lr_config = dict(policy='step', step=[30, 60, 90, 120, 150, 180])
@@ -177,3 +177,17 @@ log_config = dict(
         dict(type='TextLoggerHook'),
         # dict(type='TensorboardLoggerHook')
     ])
+
+# Precise BN hook will update the bn stats, so this hook should be executed
+# before CheckpointHook, which has priority of 'NORMAL'. So set the
+# priority of PreciseBNHook to 'ABOVE_NORMAL' here.
+custom_hooks = [
+    dict(
+        type='PreciseBNHook',
+        num_samples=8192,
+        interval=1,
+        priority='ABOVE_NORMAL')
+]
+
+# sgd with nesterov, base ls is 0.8 for batch_size 1024,
+# 0.4 for batch_size 512 and 0.2 for batch_size 256 when training ImageNet1k
