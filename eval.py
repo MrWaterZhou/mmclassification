@@ -327,24 +327,24 @@ class Runner:
             r_list = []
             for filename, res in zip(filenames, results):
                 filename['正常'] = 1
-                tags = {'image': filename['image'], 'TP': [], 'TN': [], 'FP': [], 'FN': []}
+                tags = {'image': filename['image']}
                 for r, label in zip(res, self.labels):
                     if (filename[label] == 1) and (label != '正常'):
                         filename['正常'] = 0
                     if r > 0.5:
                         if filename[label] == 1:
                             self.TP[label] += 1
-                            tags['TP'].append(label)
+                            tags[label] = 'TP'
                         else:
                             self.FP[label] += 1
-                            tags['FP'].append(label)
+                            tags[label] = 'FP'
                     else:
                         if filename[label] == 1:
                             self.FN[label] += 1
-                            tags['FN'].append(label)
+                            tags[label] = 'FN'
                         else:
                             self.TN[label] += 1
-                            tags['TN'].append(label)
+                            tags[label] = 'TN'
                 if len(tags['TP'] + tags['TN'] + tags['FP'] + tags['FN']) > 0:
                     r_list.append(json.dumps(tags, ensure_ascii=False))
             for result in r_list:
