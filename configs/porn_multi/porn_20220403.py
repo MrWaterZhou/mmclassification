@@ -166,7 +166,13 @@ evaluation = dict(interval=5, metric=['mAP', 'CP', 'CR', 'CF1', 'OP', 'OR', 'OF1
 optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001, nesterov=True)
 optimizer_config = dict(grad_clip=None)
 # learning policy
-lr_config = dict(policy='step', step=[30, 60, 90, 120, 150, 180])
+lr_config = dict(
+    policy='CosineAnnealing',
+    min_lr=0,
+    warmup='linear',
+    warmup_iters=5,
+    warmup_ratio=0.1,
+    warmup_by_epoch=True)
 runner = dict(type='EpochBasedRunner', max_epochs=200)
 
 checkpoint_config = dict(interval=5)
