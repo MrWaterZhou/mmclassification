@@ -359,7 +359,7 @@ class Loader(Thread):
 
     def run(self) -> None:
         for file in self.file_list:
-            file = json.loads(file.strip)
+            file = json.loads(file.strip())
             try:
                 image = cv2.imread(file['image'])
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
