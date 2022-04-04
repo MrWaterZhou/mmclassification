@@ -14,7 +14,7 @@ import time
 import json
 
 TRT_LOGGER = trt.Logger(trt.Logger.WARNING)
-
+import traceback
 
 def is_fixed(shape: Tuple[int]):
     return not is_dynamic(shape)
@@ -346,7 +346,7 @@ class Runner:
             for result in r_list:
                 self.save_file.write(result + '\n')
         except Exception as e:
-            print(e.__str__())
+            print(traceback.format_exc())
         return 'done'
 
 
