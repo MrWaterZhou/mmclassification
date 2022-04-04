@@ -341,7 +341,8 @@ class Runner:
                         else:
                             self.TN[label] += 1
                             tags['TN'].append(label)
-                r_list.append(json.dumps(tags, ensure_ascii=False))
+                if len(tags['TP'] + tags['TN'] + tags['FP'] + tags['FN']) > 0:
+                    r_list.append(json.dumps(tags, ensure_ascii=False))
             for result in r_list:
                 self.save_file.write(result + '\n')
         except Exception as e:
