@@ -16,6 +16,7 @@ import json
 TRT_LOGGER = trt.Logger(trt.Logger.WARNING)
 import traceback
 
+
 def is_fixed(shape: Tuple[int]):
     return not is_dynamic(shape)
 
@@ -325,8 +326,11 @@ class Runner:
             results = self.model.infer(images)[0]
             r_list = []
             for filename, res in zip(filenames, results):
+                filename['正常'] = 1
                 tags = {'image': filename['image'], 'TP': [], 'TN': [], 'FP': [], 'FN': []}
                 for r, label in zip(res, self.labels):
+                    if (filename[label] == 1) and (label != '正常'):
+                        filename['正常'] = 0
                     if r > 0.5:
                         if filename[label] == 1:
                             self.TP[label] += 1
