@@ -144,7 +144,7 @@ data = dict(
         type=dataset_type,
         data_prefix='',
         classes=['性感_胸部', '色情_女胸', '色情_男下体', '色情_口交', '性感_内衣裤', '性感_男性胸部', '色情_裸露下体', '性感_腿部特写', '正常'],
-        ann_file='/home/zhou/projects/mmclassification/data/porn/20220403/k-fold/abcd.txt',
+        ann_file='/home/zhou/projects/mmclassification/data/porn/20220403/train_v2.txt',
         pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
@@ -173,7 +173,7 @@ lr_config = dict(
     warmup_iters=5,
     warmup_ratio=0.1,
     warmup_by_epoch=True)
-runner = dict(type='EpochBasedRunner', max_epochs=50)
+runner = dict(type='EpochBasedRunner', max_epochs=200)
 
 checkpoint_config = dict(interval=5)
 # yapf:disable

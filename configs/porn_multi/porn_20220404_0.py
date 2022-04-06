@@ -35,7 +35,7 @@ policies = [
         interpolation='bicubic',
         magnitude_key='angle',
         pad_val=tuple([round(x) for x in img_norm_cfg['mean'][::-1]]),
-        magnitude_range=(0, 90)),
+        magnitude_range=(0, 30)),
     dict(type='Posterize', magnitude_key='bits', magnitude_range=(4, 0)),
     dict(type='Solarize', magnitude_key='thr', magnitude_range=(256, 0)),
     dict(
@@ -104,10 +104,10 @@ transforms = [
 
 transform_after = [
     dict(
-        type='Cutout',
+        type = 'Cutout',
         fill_value=128,
-        p=0.3
-    )
+        p = 0.3
+        )
 ]
 
 train_pipeline = [
@@ -143,57 +143,27 @@ data = dict(
     train=dict(
         type=dataset_type,
         data_prefix='',
-        classes=['性感_胸部', '色情_女胸', '色情_男下体', '色情_口交', '性感_内衣裤', '性感_男性胸部', '色情_裸露下体', '性感_腿部特写', '正常'],
-        ann_file='/home/zhou/projects/mmclassification/data/porn/20220403/k-fold/abcd.txt',
+        classes=['性感_胸部', '色情_女胸', '色情_男下体', '色情_口交', '性感_内衣裤', '性感_男性胸部', '色情_裸露下体', '性感_腿部特写','正常'],
+        ann_file='/home/zhou/projects/mmclassification/data/porn/20220403/train_v2.txt',
         pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
         data_prefix='',
-        classes=['性感_胸部', '色情_女胸', '色情_男下体', '色情_口交', '性感_内衣裤', '性感_男性胸部', '色情_裸露下体', '性感_腿部特写', '正常'],
+        classes=['性感_胸部', '色情_女胸', '色情_男下体', '色情_口交', '性感_内衣裤', '性感_男性胸部', '色情_裸露下体', '性感_腿部特写','正常'],
         ann_file='/home/zhou/projects/mmclassification/data/porn/20220403/eval_v2.txt',
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
         data_prefix='',
-        classes=['性感_胸部', '色情_女胸', '色情_男下体', '色情_口交', '性感_内衣裤', '性感_男性胸部', '色情_裸露下体', '性感_腿部特写', '正常'],
+        classes=['性感_胸部', '色情_女胸', '色情_男下体', '色情_口交', '性感_内衣裤', '性感_男性胸部', '色情_裸露下体', '性感_腿部特写','正常'],
         ann_file='/home/zhou/projects/mmclassification/data/porn/20220403/eval_v2.txt',
         pipeline=test_pipeline))
 load_from = 'https://download.openmmlab.com/mmclassification/v0/regnet/convert/RegNetX-4.0GF-ef8bb32c.pth'
-evaluation = dict(interval=5, metric=['mAP', 'CP', 'CR', 'CF1', 'OP', 'OR', 'OF1'],
-                  labels=['性感_胸部', '色情_女胸', '色情_男下体', '色情_口交', '性感_内衣裤', '性感_男性胸部', '色情_裸露下体', '性感_腿部特写', '正常'])
+evaluation = dict(interval=5, metric=['mAP', 'CP', 'CR', 'CF1', 'OP', 'OR', 'OF1'],labels=['性感_胸部', '色情_女胸', '色情_男下体', '色情_口交', '性感_内衣裤', '性感_男性胸部', '色情_裸露下体', '性感_腿部特写', '正常'])
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001, nesterov=True)
+optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=None)
 # learning policy
-lr_config = dict(
-    policy='CosineAnnealing',
-    min_lr=0,
-    warmup='linear',
-    warmup_iters=5,
-    warmup_ratio=0.1,
-    warmup_by_epoch=True)
-runner = dict(type='EpochBasedRunner', max_epochs=50)
-
-checkpoint_config = dict(interval=5)
-# yapf:disable
-log_config = dict(
-    interval=10,
-    hooks=[
-        dict(type='TextLoggerHook'),
-        # dict(type='TensorboardLoggerHook')
-    ])
-
-# Precise BN hook will update the bn stats, so this hook should be executed
-# before CheckpointHook, which has priority of 'NORMAL'. So set the
-# priority of PreciseBNHook to 'ABOVE_NORMAL' here.
-custom_hooks = [
-    dict(
-        type='PreciseBNHook',
-        num_samples=8192,
-        interval=1,
-        priority='ABOVE_NORMAL')
-]
-
-# sgd with nesterov, base ls is 0.8 for batch_size 1024,
-# 0.4 for batch_size 512 and 0.2 for batch_size 256 when training ImageNet1k
+lr_config = dict(policy='step', step=[30, 60, 90, 120, 150, 180])
+runner = dict(type='EpochBasedRunner', max_epochs=200)
