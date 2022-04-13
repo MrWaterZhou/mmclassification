@@ -130,6 +130,7 @@ if __name__ == '__main__':
                         neighbors_result[label] = max(n[label], neighbors_result[label])
                 neighbors_result['image'] = source_data['image']
                 neighbors_result['neighbor'] = 0
+                neighbors_result['neighbor_images'] = [n['image'] for n in neighbors]
                 for label in labels:
                     neighbors_result['neighbor'] = max(neighbors_result['neighbor'], int(neighbors_result[label] != source_data[label]))
                 if neighbors_result['neighbor'] > 0:
