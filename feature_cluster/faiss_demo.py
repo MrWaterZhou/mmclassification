@@ -133,6 +133,7 @@ if __name__ == '__main__':
                     for n in neighbors:
                         neighbors_result[label] = max(n[label], neighbors_result[label])
                 neighbors_result['image'] = source_data['image']
+                neighbors_result['neighbor'] = 1
                 if len(neighbors) > 0:
                     knn_result.write(json.dumps(source_data, ensure_ascii=False) + '\n')
                 else:
