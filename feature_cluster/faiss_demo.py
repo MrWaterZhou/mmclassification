@@ -136,3 +136,4 @@ if __name__ == '__main__':
                     knn_result.write(json.dumps(source_data, ensure_ascii=False) + '\n')
                 else:
                     knn_result.write(json.dumps(neighbors_result, ensure_ascii=False) + '\n')
+            start += batch_size
