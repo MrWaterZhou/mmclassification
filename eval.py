@@ -331,6 +331,8 @@ class Runner:
                 for r, label in zip(res, self.labels):
                     if (filename[label] == 1) and (label != '正常'):
                         filename['正常'] = 0
+                    if (r > 0.5) and (label !='正常'):
+                        res[-1] = 0.0
                     if r > 0.5:
                         if filename[label] == 1:
                             self.TP[label] += 1
