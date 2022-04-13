@@ -85,8 +85,8 @@ class OnnxModel:
 
 
 class FaissSearch:
-    def __init__(self, features: np.ndarray, filenames: list, model: OnnxModel):
-        self.features = features  # n,d
+    def __init__(self, feature_path: str, filenames: list, model: OnnxModel):
+        self.features = np.load(feature_path)  # n,d
         self.filenames = filenames
         d = self.features.shape[1]
         self.index = faiss.IndexFlatL2(d)
