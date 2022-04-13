@@ -93,8 +93,8 @@ if __name__ == '__main__':
     batch_size = 64
     idx = 0
     features = []
-    while idx<len(images):
-        features.append(model.get_normalized_feature(images[idx:idx+batch_size]))
+    while idx < len(images):
+        features.append(model.get_normalized_feature(images[idx:idx + batch_size]))
+        idx += batch_size
     features = np.concatenate(features, axis=0)
-    np.save(sys.argv[1]+'.features.npy')
-
+    np.save(sys.argv[1] + '.features.npy')
