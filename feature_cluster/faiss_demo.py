@@ -136,8 +136,6 @@ if __name__ == '__main__':
                 neighbors_result['neighbor'] = 0
                 for label in labels:
                     neighbors_result['neighbor'] = max(neighbors_result['neighbor'], int(neighbors_result[label] != source_data[label]))
-                if len(neighbors) > 0:
-                    knn_result.write(json.dumps(source_data, ensure_ascii=False) + '\n')
-                else:
+                if len(neighbors_result['neighbor']) > 0:
                     knn_result.write(json.dumps(neighbors_result, ensure_ascii=False) + '\n')
             start += batch_size
