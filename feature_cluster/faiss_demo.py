@@ -2,6 +2,7 @@ import cv2
 import faiss  # make faiss available
 import numpy as np
 import onnxruntime
+import json
 
 
 class OnnxModel:
@@ -102,3 +103,36 @@ class FaissSearch:
             neighbors = [self.filenames[i] for i in idx]
             for s, n in zip(score, neighbors):
                 print(fname, s, n)
+
+
+if __name__ == '__main__':
+    labels = ['性感_胸部',
+              '色情_性行为',
+              '色情_女胸',
+              '性感_臀部',
+              '色情_臀部',
+              '性感_腿部特写',
+              '色情_女下体',
+              '色情_男下体',
+              '色情_口交',
+              '性感_内衣裤',
+              '性感_男性胸部',
+              '色情_裸露下体']
+    data = [json.loads(x.strip()) for x in open('../data/porn/train_v4.txt')]
+    model = OnnxModel('model.onnx')
+    searcher = FaissSearch('train.txt.features.npy', data, model)
+    with open('knn_result.txt', 'w') as knn_result:
+        batch_size = 10
+        start = 0
+        while start < len(data):
+            scores, idxes = searcher.index.search(searcher.features[start:start + batch_size], 5)
+            for source_data, score, idx in zip(data[start:start + batch_size], scores, idxes):
+                neighbors = [data[i] for i, s in zip(idx[1:], score[1:]) if s < 0.3]
+                neighbors_result = {x: 0 for x in labels}
+                for label in labels:
+                    for n in neighbors:
+                        neighbors_result[label] = max(n[label], neighbors_result[label])
+                if len(neighbors) > 0:
+                    knn_result.write(json.dumps(source_data, ensure_ascii=False) + '\n')
+                else:
+                    knn_result.write(json.dumps(neighbors_result, ensure_ascii=False) + '\n')
