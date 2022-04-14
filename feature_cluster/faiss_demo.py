@@ -123,12 +123,12 @@ if __name__ == '__main__':
         while start < len(data):
             scores, idxes = searcher.index.search(searcher.features[start:start + batch_size], 10)
             for source_data, score, idx in zip(data[start:start + batch_size], scores, idxes):
-                neighbors = [data[i] for i, s in zip(idx[2:], score[2:])]
+                neighbors = [data[i] for i, s in zip(idx[2:], score[2:]) if s < 0.15]
                 neighbors_result = {x: 0 for x in labels}
                 for label in labels:
                     for n in neighbors:
                         neighbors_result[label] += n[label]
-                    neighbors_result[label] = 1 if neighbors_result[label] > 4 else 0
+                    neighbors_result[label] = 1 if neighbors_result[label] > 1 else 0
                     if neighbors_result[label] == source_data[label]:
                         neighbors_result.pop(label)
                 neighbors_result['image'] = source_data['image']
