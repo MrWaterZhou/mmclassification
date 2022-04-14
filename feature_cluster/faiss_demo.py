@@ -127,7 +127,7 @@ if __name__ == '__main__':
                 neighbors_result = {x: 0 for x in labels}
                 for label in labels:
                     for n in neighbors:
-                        neighbors_result[label] += neighbors_result[label]
+                        neighbors_result[label] += n[label]
                     neighbors_result[label] = 1 if neighbors_result[label] > 4 else 0
                     if neighbors_result[label] == source_data[label]:
                         neighbors_result.pop(label)
