@@ -69,7 +69,7 @@ class OnnxModel:
         image = (image - self.mean) / self.std
         image = np.transpose(image, (0, 3, 1, 2))
         image = np.ascontiguousarray(image, dtype=np.float32)
-        feature = self.forward(image)[0]  # b, 1360
+        feature = self.forward(image)[1]  # b, 1360
         feature = feature / np.linalg.norm(feature, axis=1, keepdims=True)
         return feature
 
