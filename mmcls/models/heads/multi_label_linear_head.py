@@ -130,7 +130,7 @@ class MultiCenterCls(MultiLabelClsHead):
         gt_label = gt_label.type_as(x)
         cls_score = self.fc(x)  # batch, num_class * num_center
         cls_score = torch.reshape(cls_score, (-1, self.num_center, self.num_classes))  # batch, num_center, num_classes
-        cls_score = torch.max(cls_score, dim=1, keepdim=False)
+        cls_score = torch.max(cls_score, dim=1, keepdim=False)[0]
         losses = self.loss(cls_score, gt_label, **kwargs)
         return losses
 
@@ -157,7 +157,7 @@ class MultiCenterCls(MultiLabelClsHead):
         x = self.pre_logits(x)
         cls_score = self.fc(x)  # batch, num_class * num_center
         cls_score = torch.reshape(cls_score, (-1, self.num_center, self.num_classes))  # batch, num_center, num_classes
-        cls_score = torch.max(cls_score, dim=1, keepdim=False)
+        cls_score = torch.max(cls_score, dim=1, keepdim=False)[0]
 
 
         if sigmoid:
