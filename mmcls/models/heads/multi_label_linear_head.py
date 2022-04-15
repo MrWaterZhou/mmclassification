@@ -107,7 +107,7 @@ class MultiCenterCls(MultiLabelClsHead):
                      reduction='mean',
                      loss_weight=1.0),
                  init_cfg=dict(type='Normal', layer='Linear', std=0.01)):
-        super(MultiLabelLinearClsHead, self).__init__(
+        super(MultiCenterCls, self).__init__(
             loss=loss, init_cfg=init_cfg)
 
         if num_classes <= 0:
