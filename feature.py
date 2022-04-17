@@ -423,6 +423,7 @@ if __name__ == "__main__":
         status = sum([int(t.end) for t in ts]) < len(ts)
     features = np.concatenate(runner.features, 0)
     np.save(args.save_path, features)
+    runner.save_file.close()
     for l in labels:
         precision = runner.TP[l] / (runner.TP[l] + runner.FP[l])
         recall = runner.TP[l] / (runner.TP[l] + runner.FN[l])
