@@ -349,8 +349,8 @@ class Runner:
                             tags['漏检'].append(label)
                         else:
                             self.TN[label] += 1
-                if len(tags['漏检'] + tags['误检']) > 0:
-                    r_list.append(json.dumps(filename, ensure_ascii=False))
+                # if len(tags['漏检'] + tags['误检']) > 0:
+                r_list.append(json.dumps(filename, ensure_ascii=False))
             for result in r_list:
                 self.save_file.write(result + '\n')
         except Exception as e:
