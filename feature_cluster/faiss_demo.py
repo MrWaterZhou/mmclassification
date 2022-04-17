@@ -1,48 +1,15 @@
 import cv2
 import faiss  # make faiss available
 import numpy as np
-import onnxruntime
 import json
+from eval import Model
 
 
 class OnnxModel:
-    def __init__(self, onnx_path):
-        self.onnx_session = onnxruntime.InferenceSession(onnx_path)
-        self.input_name = self.get_input_name()
-        self.output_name = self.get_output_name()
+    def __init__(self, engine_path, max_batch_size = 64):
+        self.model = Model(engine_path, max_batch_size, 224, 224)
         self.mean = np.array([123.675, 116.28, 103.53])
         self.std = np.array([58.395, 57.12, 57.375])
-
-    def get_output_name(self):
-        """
-        :param onnx_session:
-        :return:
-        """
-        output_name = []
-        for node in self.onnx_session.get_outputs():
-            output_name.append(node.name)
-        return output_name
-
-    def get_input_name(self):
-        """
-        :param onnx_session:
-        :return:
-        """
-        input_name = []
-        for node in self.onnx_session.get_inputs():
-            input_name.append(node.name)
-        return input_name
-
-    def get_input_feed(self, input_name, image_numpy):
-        """
-        :param input_name:
-        :param image_numpy:
-        :return:
-        """
-        input_feed = {}
-        for name in input_name:
-            input_feed[name] = image_numpy
-        return input_feed
 
     def forward(self, image_numpy):
         '''
@@ -52,8 +19,7 @@ class OnnxModel:
         # 输入数据的类型必须与模型一致,以下三种写法都是可以的
         # scores, boxes = self.onnx_session.run(None, {self.input_name: image_numpy})
         # scores, boxes = self.onnx_session.run(self.output_name, input_feed={self.input_name: iimage_numpy})
-        input_feed = self.get_input_feed(self.input_name, image_numpy)
-        results = self.onnx_session.run(self.output_name, input_feed=input_feed)
+        results = self.model.infer(image_numpy)
         return results
 
     def get_normalized_feature(self, image_path_list: list):
@@ -69,7 +35,7 @@ class OnnxModel:
         image = (image - self.mean) / self.std
         image = np.transpose(image, (0, 3, 1, 2))
         image = np.ascontiguousarray(image, dtype=np.float32)
-        feature = self.forward(image)[1]  # b, 1360
+        feature = self.forward(image)[0]  # b, 1360
         feature = feature / np.linalg.norm(feature, axis=1, keepdims=True)
         return feature
 
