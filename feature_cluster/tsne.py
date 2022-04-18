@@ -14,7 +14,7 @@ def tsne(data: np.ndarray, labels: list):
     df_tsne = pd.DataFrame(X_tsne_data, columns=['Dim1', 'Dim2', 'label'])
     plt.figure(figsize=(8, 8))
     sns.scatterplot(data=df_tsne, hue='label', x='Dim1', y='Dim2')
-    plt.imsave('x.png')
+    plt.savefig('x.jpg', dpi=100, facecolor='g')
 
 
 if __name__ == '__main__':
@@ -24,4 +24,4 @@ if __name__ == '__main__':
     s_feature = features[idx]
     s_data = ['性感_胸部' for i in idx]
 
-    tsne(s_feature,s_data)
+    tsne(s_feature, s_data)
