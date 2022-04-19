@@ -57,6 +57,7 @@ def kmeans(data: np.ndarray, labels):
     plt.scatter(d[0], d[1], c='red', s=150,
                 marker='*')
     plt.savefig('x.jpg', dpi=100)
+    return km.labels_
 
 
 if __name__ == '__main__':
@@ -66,4 +67,9 @@ if __name__ == '__main__':
     s_feature = features[idx]
     s_data = ['sexy_breast' for i in idx]
 
-    kmeans(s_feature, s_data)
+    cluster_labels = kmeans(s_feature, s_data)
+    with open('x.txt', 'w') as f:
+        for l, i in zip(cluster_labels, idx):
+            tmp = labels[i]
+            tmp['cluster_label'] = l
+            f.write(json.dumps(tmp, ensure_ascii=False) + '\n')
