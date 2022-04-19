@@ -80,30 +80,28 @@ class FaissSearch:
         return neighbors
 
 
-
-
 def try_demo():
     model = OnnxModel('/data/xialang/projects/mmclassification/work_dirs/porn_20220404_multiCenter/feature.engine')
     data = [json.loads(x.strip()) for x in open('train')]
     searcher = FaissSearch('train.npy', data, model)
     return searcher
 
-def find_and_extend(filename:str):
+
+def find_and_extend(filename: str, save_path='result.txt'):
     searcher = try_demo()
     results = []
     results.extend(searcher.find_by_score(filename))
 
-    filenames = [x['image'] for x in results if x['性感_胸部']==0]
+    filenames = [x['image'] for x in results if x['性感_胸部'] == 0]
     for filename in filenames:
         results.extend(searcher.find_by_score(filename))
 
     uniq = set()
-    with open('result.txt','w') as f:
+    with open(save_path, 'w') as f:
         for x in results:
             if x['image'] not in uniq:
-                f.write(json.dumps(x,ensure_ascii=False) + '\n')
+                f.write(json.dumps(x, ensure_ascii=False) + '\n')
                 uniq.add(x['image'])
-
 
 
 if __name__ == '__main__':
