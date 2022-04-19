@@ -28,17 +28,11 @@ def kmeans(data: np.ndarray, labels):
     pca = PCA(64)
     data_pca = pca.fit_transform(data)
     km.fit(data_pca)
-    # 将原始数据中的索引设置成得到的数据类别
-    X_out = pd.DataFrame(data_pca, index=km.labels_)
-    X_out_center = pd.DataFrame(km.cluster_centers_)  # 找出聚类中心
-    # 将中心放入到数据中，一并tsne，不能单独tsne
-    X_outwithcenter = X_out.append(X_out_center)
 
     # 用TSNE进行数据降维并展示聚类结果
     from sklearn.manifold import TSNE
     tsne = TSNE()
-    tsne.fit_transform(X_outwithcenter)  # 进行数据降维,并返回结果
-    X_tsne = pd.DataFrame(tsne.embedding_)
+    X_tsne = tsne.fit_transform(data_pca)  # 进行数据降维,并返回结果
     X_tsne_data = np.vstack((X_tsne.T, labels)).T
     df_tsne = pd.DataFrame(X_tsne_data, columns=['Dim1', 'Dim2', 'label'])
     # 将index化成原本的数据的index，tsne后index会变化
