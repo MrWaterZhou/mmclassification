@@ -95,7 +95,8 @@ def find_and_extend(filename:str):
 
     filenames = [x['image'] for x in results]
     for filename in filenames:
-        results.extend(searcher.find_by_score(filename))
+        if filename['性感_胸部'] == 0:
+            results.extend(searcher.find_by_score(filename))
 
     uniq = set()
     with open('result.txt','w') as f:
