@@ -73,7 +73,7 @@ class FaissSearch:
     def find_by_score(self, filename: str):
         filename_list = [filename]
         features = self.model.get_normalized_feature(filename_list)
-        _, scores, idxes = self.index.range_search(features, 0.25)
+        _, scores, idxes = self.index.range_search(features, 0.20)
         neighbors = [self.filenames[i] for i in idxes]
         for s, n in zip(scores, neighbors):
             print(filename, s, n)
