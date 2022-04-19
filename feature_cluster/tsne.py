@@ -60,5 +60,5 @@ if __name__ == '__main__':
     with open('x.txt', 'w') as f:
         for l, i in zip(cluster_labels, idx):
             tmp = labels[i]
-            tmp['cluster_label'] = l
+            tmp['cluster_label'] = int(l)
             f.write(json.dumps(tmp, ensure_ascii=False) + '\n')
