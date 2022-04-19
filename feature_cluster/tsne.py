@@ -20,7 +20,7 @@ def tsne(data: np.ndarray, labels: list):
 
 
 def kmeans(data: np.ndarray, labels):
-    km = KMeans(n_clusters=3,
+    km = KMeans(n_clusters=8,
                 init='k-means++',
                 n_init=10,
                 max_iter=300,
@@ -38,25 +38,14 @@ def kmeans(data: np.ndarray, labels):
     from sklearn.manifold import TSNE
     tsne = TSNE()
     tsne.fit_transform(X_outwithcenter)  # 进行数据降维,并返回结果
-    X_tsne = pd.DataFrame(tsne.embedding_, index=X_outwithcenter.index)
+    X_tsne = pd.DataFrame(tsne.embedding_)
+    X_tsne_data = np.vstack((X_tsne.T, labels)).T
+    df_tsne = pd.DataFrame(X_tsne_data, columns=['Dim1', 'Dim2', 'label'])
     # 将index化成原本的数据的index，tsne后index会变化
-
-    import matplotlib.pyplot as plt
-    # 根据类别分割数据后，画图
-    d = X_tsne[X_tsne.index == 0]  # 找出聚类类别为0的数据对应的降维结果
-    plt.scatter(d[0], d[1], c='lightgreen',
-                marker='o')
-    d = X_tsne[X_tsne.index == 1]
-    plt.scatter(d[0], d[1], c='orange',
-                marker='o')
-    d = X_tsne[X_tsne.index == 2]
-    plt.scatter(d[0], d[1], c='lightblue',
-                marker='o')
-    # 取中心点，画出
-    d = X_tsne.tail(3)
-    plt.scatter(d[0], d[1], c='red', s=150,
-                marker='*')
+    plt.figure(figsize=(8, 8))
+    sns.scatterplot(data=df_tsne, hue='label', x='Dim1', y='Dim2')
     plt.savefig('x.jpg', dpi=100)
+
     return km.labels_
 
 
