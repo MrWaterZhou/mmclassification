@@ -6,7 +6,7 @@ from eval import Model
 
 
 class OnnxModel:
-    def __init__(self, engine_path, max_batch_size = 64):
+    def __init__(self, engine_path, max_batch_size=64):
         self.model = Model(engine_path, max_batch_size, 224, 224)
         self.mean = np.array([123.675, 116.28, 103.53])
         self.std = np.array([58.395, 57.12, 57.375])
@@ -70,14 +70,14 @@ class FaissSearch:
             for s, n in zip(score, neighbors):
                 print(fname, s, n)
 
-    def find_by_score(self, filename:str):
-
+    def find_by_score(self, filename: str):
         filename_list = [filename]
         features = self.model.get_normalized_feature(filename_list)
         _, scores, idxes = self.index.range_search(features, 0.25)
         neighbors = [self.filenames[i] for i in idxes]
         for s, n in zip(scores, neighbors):
             print(filename, s, n)
+        return neighbors
 
 
 
@@ -87,6 +87,24 @@ def try_demo():
     data = [json.loads(x.strip()) for x in open('train')]
     searcher = FaissSearch('train.npy', data, model)
     return searcher
+
+def find_and_extend(filename:str):
+    searcher = try_demo()
+    results = []
+    results.extend(searcher.find_by_score(filename))
+
+    filenames = [x['image'] for x in results]
+    for filename in filenames:
+        results.extend(searcher.find_by_score(filename))
+
+    uniq = set()
+    with open('result.txt','w') as f:
+        for x in results:
+            if x['image'] not in uniq:
+                f.write(json.dumps(x,ensure_ascii=False) + '\n')
+                uniq.add(x['image'])
+
+
 
 if __name__ == '__main__':
     labels = ['性感_胸部',
