@@ -70,6 +70,24 @@ class FaissSearch:
             for s, n in zip(score, neighbors):
                 print(fname, s, n)
 
+    def find_by_score(self, filename_list:list):
+        if isinstance(filename_list, str):
+            filename_list = [filename_list]
+        features = self.model.get_normalized_feature(filename_list)
+        scores, idxes = self.index.range_search(features, 0.25)
+        for fname, score, idx in zip(filename_list, scores, idxes):
+            neighbors = [self.filenames[i] for i in idx]
+            for s, n in zip(score, neighbors):
+                print(fname, s, n)
+
+
+
+
+def try_demo():
+    model = OnnxModel('/data/xialang/projects/mmclassification/work_dirs/porn_20220404_multiCenter/feature.engine')
+    data = [json.loads(x.strip()) for x in open('train')]
+    searcher = FaissSearch('train.npy', data, model)
+    return searcher
 
 if __name__ == '__main__':
     labels = ['性感_胸部',
