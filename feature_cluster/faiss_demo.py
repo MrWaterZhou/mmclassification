@@ -74,11 +74,11 @@ class FaissSearch:
         if isinstance(filename_list, str):
             filename_list = [filename_list]
         features = self.model.get_normalized_feature(filename_list)
-        scores, idxes = self.index.range_search(features, 0.25)
-        for fname, score, idx in zip(filename_list, scores, idxes):
+        idxes = self.index.range_search(features, 0.25)
+        for fname, idx in zip(filename_list, idxes):
             neighbors = [self.filenames[i] for i in idx]
-            for s, n in zip(score, neighbors):
-                print(fname, s, n)
+            for n in neighbors:
+                print(fname, n)
 
 
 
