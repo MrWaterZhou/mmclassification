@@ -104,6 +104,21 @@ def find_and_extend(filename: str, save_path='result.txt'):
                 uniq.add(x['image'])
 
 
+def find_and_extend_clean(filenames: list, save_path='result.txt'):
+    searcher = try_demo()
+    results = []
+
+    for filename in filenames:
+        results.extend(searcher.find_by_score(filename))
+
+    uniq = set()
+    with open(save_path, 'w') as f:
+        for x in results:
+            if x['image'] not in uniq:
+                f.write(json.dumps(x, ensure_ascii=False) + '\n')
+                uniq.add(x['image'])
+
+
 if __name__ == '__main__':
     labels = ['性感_胸部',
               '色情_女胸',
