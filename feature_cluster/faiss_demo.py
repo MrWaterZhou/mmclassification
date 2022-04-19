@@ -70,15 +70,14 @@ class FaissSearch:
             for s, n in zip(score, neighbors):
                 print(fname, s, n)
 
-    def find_by_score(self, filename_list:list):
-        if isinstance(filename_list, str):
-            filename_list = [filename_list]
+    def find_by_score(self, filename:str):
+
+        filename_list = [filename]
         features = self.model.get_normalized_feature(filename_list)
         _, scores, idxes = self.index.range_search(features, 0.25)
-        for fname, score, idx in zip(filename_list, scores, idxes):
-            neighbors = [self.filenames[i] for i in idx]
-            for s, n in zip(score, neighbors):
-                print(fname, s, n)
+        neighbors = [self.filenames[i] for i in idxes]
+        for s, n in zip(scores, neighbors):
+            print(filename, s, n)
 
 
 
