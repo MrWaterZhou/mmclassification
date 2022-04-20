@@ -53,7 +53,10 @@ class OnnxModel:
 
 class FaissSearch:
     def __init__(self, feature_path: str, filenames: list, model: OnnxModel):
-        self.features = np.load(feature_path)  # n,d
+        if isinstance(feature_path, str):
+            self.features = np.load(feature_path)  # n,d
+        else:
+            self.features = feature_path
         self.filenames = filenames
         d = self.features.shape[1]
         self.index = faiss.IndexFlatL2(d)
@@ -117,6 +120,24 @@ def find_and_extend_clean(filenames: list, save_path='result.txt'):
             if x['image'] not in uniq:
                 f.write(json.dumps(x, ensure_ascii=False) + '\n')
                 uniq.add(x['image'])
+
+
+def find_similar():
+    model = OnnxModel('/data/xialang/projects/mmclassification/work_dirs/porn_20220404_multiCenter/feature.engine')
+    data = [json.loads(x.strip()) for x in open('train')]
+    features = np.load('train.npy')
+    filenames = [x.strip() for x in open('/data/xialang/tmp_data/轻度性感_胸部.txt')]
+    filename_set = set(filenames)
+    idx = [i for i, x in enumerate(data) if x['image'] in filename_set]
+    cluster_feature = features[idx]
+    searcher = FaissSearch(cluster_feature, filenames, model)
+
+    with open('轻度性感_胸部_v2.txt', 'w') as f:
+        for x in data:
+            if x['image'] not in filename_set:
+                n = searcher.find_by_score(x['image'])
+                if len(n) > 5:
+                    f.write(json.dumps(x, ensure_ascii=False) + '\n')
 
 
 if __name__ == '__main__':
