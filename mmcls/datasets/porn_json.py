@@ -93,8 +93,8 @@ class PornJson(MultiLabelDataset):
                                     f'{",".join(self.IMG_EXTENSIONS)}'))
 
             self.folder_to_idx = folder_to_idx
-        elif isinstance(self.ann_file, str):
-            self.ann_file = [self.ann_file]
+        elif isinstance(self.ann_file, str) or isinstance(self.ann_file, list):
+            self.ann_file = [self.ann_file] if isinstance(self.ann_file, str) else self.ann_file
             samples = []
             for ann_file in self.ann_file:
                 with open(ann_file) as f:
