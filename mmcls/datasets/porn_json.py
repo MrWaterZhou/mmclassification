@@ -94,8 +94,11 @@ class PornJson(MultiLabelDataset):
 
             self.folder_to_idx = folder_to_idx
         elif isinstance(self.ann_file, str):
-            with open(self.ann_file) as f:
-                samples = [json.loads(x.strip()) for x in f.readlines()]
+            self.ann_file = [self.ann_file]
+            samples = []
+            for ann_file in self.ann_file:
+                with open(ann_file) as f:
+                    samples.extend([json.loads(x.strip()) for x in f.readlines()])
             if os.path.exists(self.ann_file + '.add'):
                 with open(self.ann_file + '.add') as f:
                     add = [json.loads(x.strip()) for x in f.readlines()]
@@ -115,7 +118,7 @@ class PornJson(MultiLabelDataset):
             info = {'img_prefix': self.data_prefix}
             info['img_info'] = {'filename': sample['image'],
                                 'choices': local_aug[sample['image']] if sample['image'] in local_aug else []}
-            gt_label = [sample[x] for x in self.CLASSES if x != '正常']
+            gt_label = [sample[x] if x in sample else 0 for x in self.CLASSES if x != '正常']
             if '正常' in self.CLASSES:
                 gt_label.append(0) if sum(gt_label) > 0 else gt_label.append(1)
             if len(gt_label) == 1:
