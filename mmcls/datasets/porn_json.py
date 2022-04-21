@@ -96,17 +96,18 @@ class PornJson(MultiLabelDataset):
         elif isinstance(self.ann_file, str) or isinstance(self.ann_file, list):
             self.ann_file = [self.ann_file] if isinstance(self.ann_file, str) else self.ann_file
             samples = []
+            add = []
             for ann_file in self.ann_file:
                 with open(ann_file) as f:
                     samples.extend([json.loads(x.strip()) for x in f.readlines()])
-            if os.path.exists(self.ann_file + '.add'):
-                with open(self.ann_file + '.add') as f:
-                    add = [json.loads(x.strip()) for x in f.readlines()]
-                for x in add:
-                    for key in x:
-                        if key not in local_aug:
-                            local_aug[key] = []
-                        local_aug[key].extend(x[key])
+                if os.path.exists(ann_file + '.add'):
+                    with open(ann_file + '.add') as f:
+                        add.extend([json.loads(x.strip()) for x in f.readlines()])
+            for x in add:
+                for key in x:
+                    if key not in local_aug:
+                        local_aug[key] = []
+                    local_aug[key].extend(x[key])
 
 
         else:
