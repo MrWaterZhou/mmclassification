@@ -330,26 +330,6 @@ class Runner:
             self.features.append(features)
             r_list = []
             for filename, res in zip(filenames, results):
-                filename['正常'] = 1
-                tags = {'image': filename['image'], '误检': [], '漏检': []}
-                for r, label in zip(res, self.labels):
-                    if (filename[label] == 1) and (label != '正常'):
-                        filename['正常'] = 0
-                    if (r > 0.5) and (label != '正常'):
-                        res[-1] = 0.0
-                    if r > 0.5:
-                        if filename[label] == 1:
-                            self.TP[label] += 1
-                        else:
-                            self.FP[label] += 1
-                            tags['误检'].append(label)
-                    else:
-                        if filename[label] == 1:
-                            self.FN[label] += 1
-                            tags['漏检'].append(label)
-                        else:
-                            self.TN[label] += 1
-                # if len(tags['漏检'] + tags['误检']) > 0:
                 r_list.append(json.dumps(filename, ensure_ascii=False))
             for result in r_list:
                 self.save_file.write(result + '\n')
@@ -424,9 +404,4 @@ if __name__ == "__main__":
     features = np.concatenate(runner.features, 0)
     np.save(args.save_path, features)
     runner.save_file.close()
-    for l in labels:
-        precision = runner.TP[l] / (runner.TP[l] + runner.FP[l])
-        recall = runner.TP[l] / (runner.TP[l] + runner.FN[l])
-        print('{}, precision:{}, recall:{}'.format(l, precision, recall))
-
     print('done')
