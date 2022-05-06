@@ -65,21 +65,21 @@ class RegNet(ResNet):
     """
     arch_settings = {
         'regnetx_400mf':
-        dict(w0=24, wa=24.48, wm=2.54, group_w=16, depth=22, bot_mul=1.0),
+            dict(w0=24, wa=24.48, wm=2.54, group_w=16, depth=22, bot_mul=1.0),
         'regnetx_800mf':
-        dict(w0=56, wa=35.73, wm=2.28, group_w=16, depth=16, bot_mul=1.0),
+            dict(w0=56, wa=35.73, wm=2.28, group_w=16, depth=16, bot_mul=1.0),
         'regnetx_1.6gf':
-        dict(w0=80, wa=34.01, wm=2.25, group_w=24, depth=18, bot_mul=1.0),
+            dict(w0=80, wa=34.01, wm=2.25, group_w=24, depth=18, bot_mul=1.0),
         'regnetx_3.2gf':
-        dict(w0=88, wa=26.31, wm=2.25, group_w=48, depth=25, bot_mul=1.0),
+            dict(w0=88, wa=26.31, wm=2.25, group_w=48, depth=25, bot_mul=1.0),
         'regnetx_4.0gf':
-        dict(w0=96, wa=38.65, wm=2.43, group_w=40, depth=23, bot_mul=1.0),
+            dict(w0=96, wa=38.65, wm=2.43, group_w=40, depth=23, bot_mul=1.0),
         'regnetx_6.4gf':
-        dict(w0=184, wa=60.83, wm=2.07, group_w=56, depth=17, bot_mul=1.0),
+            dict(w0=184, wa=60.83, wm=2.07, group_w=56, depth=17, bot_mul=1.0),
         'regnetx_8.0gf':
-        dict(w0=80, wa=49.56, wm=2.88, group_w=120, depth=23, bot_mul=1.0),
+            dict(w0=80, wa=49.56, wm=2.88, group_w=120, depth=23, bot_mul=1.0),
         'regnetx_12gf':
-        dict(w0=168, wa=73.36, wm=2.37, group_w=112, depth=19, bot_mul=1.0),
+            dict(w0=168, wa=73.36, wm=2.37, group_w=112, depth=19, bot_mul=1.0),
     }
 
     def __init__(self,
@@ -89,7 +89,7 @@ class RegNet(ResNet):
                  base_channels=32,
                  strides=(2, 2, 2, 2),
                  dilations=(1, 1, 1, 1),
-                 out_indices=(3, ),
+                 out_indices=(3,),
                  style='pytorch',
                  deep_stem=False,
                  avg_down=False,
@@ -198,6 +198,7 @@ class RegNet(ResNet):
             kernel_size=3,
             stride=2,
             padding=1,
+            padding_mode='circular', # TODO: 测试
             bias=False)
         self.norm1_name, norm1 = build_norm_layer(
             self.norm_cfg, base_channels, postfix=1)
