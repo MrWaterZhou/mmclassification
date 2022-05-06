@@ -20,7 +20,7 @@ if __name__ == '__main__':
             normal_prob = normal_prob * (1 - x['preds'][l])
 
         if len(label) == 0:
-            label.append(len(labels_to_check) + 1)
+            label.append(len(labels_to_check))
         pred.append(normal_prob)
         labels.append(label)
         preds.append(pred)
