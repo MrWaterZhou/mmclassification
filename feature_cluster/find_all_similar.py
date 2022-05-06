@@ -26,4 +26,4 @@ if __name__ == '__main__':
     with open(sys.argv[3], 'w') as f:
         for key in similar:
             similar[key]['neighbor_label'] = list(set(similar[key]['neighbor_label']))
-            f.write(json.dumps(similar[key]) + '\n')
+            f.write(json.dumps(similar[key], ensure_ascii=False) + '\n')
