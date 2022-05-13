@@ -282,7 +282,7 @@ def main():
 
 
 class Runner:
-    def __init__(self, arch, max_batch_size, engine_path, labels, image_queue: Queue, save_path: str):
+    def __init__(self, arch, max_batch_size, engine_path, labels, image_queue: Queue, save_path: str, threshold=0.5):
         assert arch in {'regnetx', 'resnet'}
         self.mean = 0
         self.std = 1
@@ -300,6 +300,7 @@ class Runner:
         self.TN = {x: 0 for x in self.labels}
         self.FP = {x: 0 for x in self.labels}
         self.FN = {x: 0 for x in self.labels}
+        self.threshold = threshold
 
     def preprocess(self, images):
         images = np.concatenate(images, 0)
@@ -334,9 +335,9 @@ class Runner:
                         filename[label] = 0
                     if (filename[label] == 1) and (label != '正常'):
                         filename['正常'] = 0
-                    if (r > 0.5) and (label != '正常') and ('正常' in self.labels):
+                    if (r > self.threshold) and (label != '正常') and ('正常' in self.labels):
                         res[-1] = 0.0
-                    if r > 0.5:
+                    if r > self.threshold:
                         if filename[label] == 1:
                             self.TP[label] += 1
                         else:
@@ -387,6 +388,7 @@ def parse_args():
     parser.add_argument('--arch', default='regnetx')
     parser.add_argument('--max_batch_size', default=64, type=int)
     parser.add_argument('--labels', default='0,1')
+    parser.add_argument('--threshold', default=0.5, type=float)
     args = parser.parse_args()
 
     return args
@@ -405,7 +407,7 @@ if __name__ == "__main__":
     image_queue = Queue(100)
     file_queue = Queue(100)
     runner = Runner(args.arch, args.max_batch_size, args.engine_path, labels, image_queue,
-                    args.save_path)
+                    args.save_path, args.threshold)
 
     if os.path.isfile(args.source):
         files = open(args.source).readlines()
