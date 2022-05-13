@@ -333,7 +333,7 @@ class Runner:
                         filename[label] = 0
                     if (filename[label] == 1) and (label != '正常'):
                         filename['正常'] = 0
-                    if (r > 0.5) and (label !='正常'):
+                    if (r > 0.5) and (label !='正常') and ('正常' in self.labels):
                         res[-1] = 0.0
                     if r > 0.5:
                         if filename[label] == 1:
@@ -395,7 +395,8 @@ if __name__ == "__main__":
     args = parse_args()
     # config
     num_preprocess_threads = args.num_preprocess_threads
-    labels = ['性感_胸部', '色情_女胸', '色情_男下体', '色情_口交', '性感_内衣裤', '性感_男性胸部', '色情_裸露下体', '性感_腿部特写', '轻度性感_胸部']
+    # labels = ['性感_胸部', '色情_女胸', '色情_男下体', '色情_口交', '性感_内衣裤', '性感_男性胸部', '色情_裸露下体', '性感_腿部特写', '轻度性感_胸部']
+    labels = ['性感_内衣裤','正常']
     image_queue = Queue(100)
     file_queue = Queue(100)
     runner = Runner(args.arch, args.max_batch_size, args.engine_path, labels, image_queue,
