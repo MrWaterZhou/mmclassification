@@ -15,6 +15,7 @@ import json
 
 TRT_LOGGER = trt.Logger(trt.Logger.WARNING)
 import traceback
+import mmcv
 
 
 def is_fixed(shape: Tuple[int]):
@@ -333,7 +334,7 @@ class Runner:
                         filename[label] = 0
                     if (filename[label] == 1) and (label != '正常'):
                         filename['正常'] = 0
-                    if (r > 0.5) and (label !='正常') and ('正常' in self.labels):
+                    if (r > 0.5) and (label != '正常') and ('正常' in self.labels):
                         res[-1] = 0.0
                     if r > 0.5:
                         if filename[label] == 1:
@@ -393,10 +394,14 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
+    a, b, c = args.engine_path.split('/')
+    try:
+        cfg = mmcv.Config.fromfile(os.path.join(a, b, b + '.py'))
+        labels = cfg['data']['val']['classes']
+    except:
+        labels = args.labels.split(',')
     # config
     num_preprocess_threads = args.num_preprocess_threads
-    # labels = ['性感_胸部', '色情_女胸', '色情_男下体', '色情_口交', '性感_内衣裤', '性感_男性胸部', '色情_裸露下体', '性感_腿部特写', '轻度性感_胸部']
-    labels = ['性感_内衣裤','正常']
     image_queue = Queue(100)
     file_queue = Queue(100)
     runner = Runner(args.arch, args.max_batch_size, args.engine_path, labels, image_queue,
@@ -423,7 +428,7 @@ if __name__ == "__main__":
 
     for l in labels:
         precision = runner.TP[l] / (runner.TP[l] + runner.FP[l] + 1e-5)
-        recall = runner.TP[l] / (runner.TP[l] + runner.FN[l]+ 1e-5)
+        recall = runner.TP[l] / (runner.TP[l] + runner.FN[l] + 1e-5)
         print('{}, precision:{}, recall:{}'.format(l, precision, recall))
 
     print('done')
