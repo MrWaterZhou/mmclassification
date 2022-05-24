@@ -198,7 +198,7 @@ class RegNet(ResNet):
             kernel_size=3,
             stride=2,
             padding=1,
-            padding_mode='circular', # TODO: 测试
+            # padding_mode='circular', # TODO: 测试
             bias=False)
         self.norm1_name, norm1 = build_norm_layer(
             self.norm_cfg, base_channels, postfix=1)
