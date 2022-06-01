@@ -10,7 +10,8 @@ from mmcv.onnx import register_extra_symbolics
 from mmcv.runner import load_checkpoint
 import cv2
 from mmcls.models import build_classifier
-
+from onnx import shape_inference, helper, TensorProto
+import onnx
 torch.manual_seed(3)
 
 
@@ -100,17 +101,24 @@ def pytorch2onnx(model,
             input_names=['input'],
             output_names=['probs'],
             export_params=True,
-            keep_initializers_as_inputs=True,
+            # keep_initializers_as_inputs=True,
+            # TODO
+            # training=False,
+            do_constant_folding=True,
+            # TODO
             dynamic_axes=dynamic_axes,
             verbose=show,
             opset_version=opset_version)
         print(f'Successfully exported ONNX model: {output_file}')
     model.forward = origin_forward
+    onnx_model = onnx.load_model(output_file)
+    print(output_file)
+    onnx_module = shape_inference.infer_shapes(onnx_model)
+    onnx.save(onnx_module, output_file+'.shape.onnx')
 
     if do_simplify:
         from mmcv import digit_version
         import onnxsim
-        import onnx
 
         min_required_version = '0.3.0'
         assert digit_version(mmcv.__version__) >= digit_version(
@@ -139,7 +147,6 @@ def pytorch2onnx(model,
             print('Failed to simplify ONNX model.')
     if verify:
         # check by onnx
-        import onnx
         onnx_model = onnx.load(output_file)
         onnx.checker.check_model(onnx_model)
 
