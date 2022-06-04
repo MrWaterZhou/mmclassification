@@ -59,6 +59,11 @@ def pytorch2onnx(model,
             Default: False.
     """
     model.cpu().eval()
+    try:
+        model.backbone.switch_to_deploy()
+        print('repvgg reparameter done')
+    except:
+        print('not repvgg')
 
     if hasattr(model.head, 'num_classes'):
         num_classes = model.head.num_classes
