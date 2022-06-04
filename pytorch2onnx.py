@@ -93,7 +93,7 @@ def pytorch2onnx(model,
         }
     else:
         dynamic_axes = {}
-
+    print(model)
     with torch.no_grad():
         torch.onnx.export(
             model, (img_list,),
@@ -101,13 +101,13 @@ def pytorch2onnx(model,
             input_names=['input'],
             output_names=['probs'],
             export_params=True,
-            # keep_initializers_as_inputs=True,
+            keep_initializers_as_inputs=True,
             # TODO
             # training=False,
             do_constant_folding=True,
             # TODO
             dynamic_axes=dynamic_axes,
-            verbose=show,
+            verbose=False,
             opset_version=opset_version)
         print(f'Successfully exported ONNX model: {output_file}')
     model.forward = origin_forward
